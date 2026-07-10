@@ -1,0 +1,27 @@
+{
+  "fixture_notice": "SIMULATED STRUCTURAL FIXTURE — NOT AN OFFICIAL STANDARD",
+  "standard_version": {
+    "standard_id": "simulated-standard-a",
+    "name": "模拟披露准则 A",
+    "version_id": "fixture-1",
+    "effective_from": "2025-01-01",
+    "effective_to": null,
+    "source_uri": "urn:report-agent:simulated-standard-a",
+    "review_status": "draft",
+    "content_hash": "simulated-content-not-for-regulatory-use"
+  },
+  "requirements": [
+    {
+      "requirement_id": "SIM-REQ-001",
+      "standard_id": "simulated-standard-a",
+      "version_id": "fixture-1",
+      "clause_id": "SIM-A-1",
+      "original_text": "模拟条款：说明报告的虚构示例范围。",
+      "check_text": "说明模拟项目的示例范围。",
+      "requirement_level": "custom",
+      "conditions": [],
+      "review_status": "draft"
+    }
+  ]
+}
+

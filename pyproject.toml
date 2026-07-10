@@ -1,0 +1,29 @@
+[project]
+name = "sustainability-report-harness"
+version = "0.1.0"
+description = "Local harness for traceable multi-standard sustainability disclosure projects"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "PyYAML==6.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==8.4.2",
+    "ruff==0.12.0",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["skills/sustainability-report-harness/scripts"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+

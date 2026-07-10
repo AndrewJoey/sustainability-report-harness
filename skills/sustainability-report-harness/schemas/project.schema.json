@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sustainability-report-harness/project.schema.json",
+  "title": "Sustainability Report Project",
+  "type": "object",
+  "required": [
+    "project_id",
+    "project_name",
+    "client_name",
+    "reporting_period_start",
+    "reporting_period_end",
+    "report_type",
+    "primary_language",
+    "target_length_words",
+    "granularity",
+    "selected_standards",
+    "custom_requirements",
+    "gap_handling",
+    "peer_reference_mode",
+    "data_policy",
+    "deliverables"
+  ],
+  "properties": {
+    "project_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,63}$"},
+    "project_name": {"type": "string", "minLength": 1},
+    "client_name": {"type": "string", "minLength": 1},
+    "reporting_period_start": {"type": "string", "format": "date"},
+    "reporting_period_end": {"type": "string", "format": "date"},
+    "report_type": {"enum": ["sustainability", "climate", "combined"]},
+    "primary_language": {"const": "zh-CN"},
+    "target_length_words": {"type": ["integer", "null"], "minimum": 1},
+    "granularity": {"enum": ["concise", "standard", "detailed", "custom"]},
+    "selected_standards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["standard_id", "version_id", "confirmed_by_user"],
+        "properties": {
+          "standard_id": {"type": "string", "minLength": 1},
+          "version_id": {"type": "string", "minLength": 1},
+          "confirmed_by_user": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "custom_requirements": {"type": "array"},
+    "gap_handling": {"enum": ["questionnaire", "marked_draft", "gap_only"]},
+    "peer_reference_mode": {"enum": ["style_reference", "quality_benchmark", "both", "none"]},
+    "data_policy": {
+      "type": "object",
+      "required": ["cloud_processing_allowed", "web_search_allowed", "anonymization_required", "retention"],
+      "properties": {
+        "cloud_processing_allowed": {"type": "boolean"},
+        "web_search_allowed": {"type": "boolean"},
+        "anonymization_required": {"type": "boolean"},
+        "retention": {"enum": ["keep", "delete_after_export", "ask"]}
+      },
+      "additionalProperties": false
+    },
+    "deliverables": {
+      "type": "object",
+      "required": ["master_report", "response_matrix", "gap_list", "evidence_list", "adaptations"],
+      "properties": {
+        "master_report": {"type": "boolean"},
+        "response_matrix": {"type": "boolean"},
+        "gap_list": {"type": "boolean"},
+        "evidence_list": {"type": "boolean"},
+        "adaptations": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}
+

@@ -1,0 +1,4 @@
+interface:
+  display_name: "可持续披露报告 Harness"
+  short_description: "创建、校验并恢复可追溯的多准则可持续披露报告项目状态"
+  default_prompt: "Use $sustainability-report-harness to create or resume a local sustainability disclosure reporting project."

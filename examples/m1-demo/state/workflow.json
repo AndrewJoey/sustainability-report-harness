@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "workflow_state": "created",
+  "previous_state": null,
+  "updated_at": "2026-07-10T09:53:46.441612+00:00",
+  "checkpoints": {
+    "data_consent": {
+      "status": "pending",
+      "updated_at": "2026-07-10T09:53:46.441612+00:00",
+      "approved_by": null,
+      "artifacts": [],
+      "notes": null
+    },
+    "project_spec": {
+      "status": "pending",
+      "updated_at": "2026-07-10T09:53:46.441612+00:00",
+      "approved_by": null,
+      "artifacts": [],
+      "notes": null
+    },
+    "standards": {
+      "status": "pending",
+      "updated_at": "2026-07-10T09:53:46.441612+00:00",
+      "approved_by": null,
+      "artifacts": [],
+      "notes": null
+    },
+    "evidence": {
+      "status": "pending",
+      "updated_at": "2026-07-10T09:53:46.441612+00:00",
+      "approved_by": null,
+      "artifacts": [],
+      "notes": null
+    },
+    "outline": {
+      "status": "pending",
+      "updated_at": "2026-07-10T09:53:46.441612+00:00",
+      "approved_by": null,
+      "artifacts": [],
+      "notes": null
+    },
+    "anchor": {
+      "status": "pending",
+      "updated_at": "2026-07-10T09:53:46.441612+00:00",
+      "approved_by": null,
+      "artifacts": [],
+      "notes": null
+    },
+    "master": {
+      "status": "pending",
+      "updated_at": "2026-07-10T09:53:46.441612+00:00",
+      "approved_by": null,
+      "artifacts": [],
+      "notes": null
+    },
+    "export": {
+      "status": "pending",
+      "updated_at": "2026-07-10T09:53:46.441612+00:00",
+      "approved_by": null,
+      "artifacts": [],
+      "notes": null
+    }
+  }
+}

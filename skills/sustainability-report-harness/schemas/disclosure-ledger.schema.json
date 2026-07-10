@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sustainability-report-harness/disclosure-ledger.schema.json",
+  "title": "Disclosure Ledger Entry",
+  "type": "object",
+  "required": [
+    "ledger_id",
+    "unified_disclosure",
+    "requirements",
+    "evidence",
+    "content",
+    "assessments",
+    "review_status"
+  ],
+  "properties": {
+    "ledger_id": {"type": "string", "minLength": 1},
+    "unified_disclosure": {"type": "object"},
+    "requirements": {"type": "array"},
+    "evidence": {"type": "array"},
+    "content": {"type": "array"},
+    "assessments": {"type": "array"},
+    "review_status": {"enum": ["unreviewed", "accepted", "rejected", "edited"]}
+  },
+  "additionalProperties": false
+}
+

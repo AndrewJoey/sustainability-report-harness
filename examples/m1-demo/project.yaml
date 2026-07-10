@@ -1,0 +1,24 @@
+project_id: m1-demo
+project_name: M1 模拟项目
+client_name: 模拟客户（非真实客户）
+reporting_period_start: '2025-01-01'
+reporting_period_end: '2025-12-31'
+report_type: sustainability
+primary_language: zh-CN
+target_length_words: null
+granularity: standard
+selected_standards: []
+custom_requirements: []
+gap_handling: questionnaire
+peer_reference_mode: none
+data_policy:
+  cloud_processing_allowed: false
+  web_search_allowed: false
+  anonymization_required: true
+  retention: ask
+deliverables:
+  master_report: true
+  response_matrix: true
+  gap_list: true
+  evidence_list: true
+  adaptations: []

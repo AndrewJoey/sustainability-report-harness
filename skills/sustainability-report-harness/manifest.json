@@ -1,0 +1,53 @@
+{
+  "name": "sustainability-report-harness",
+  "version": "0.1.0",
+  "maturity": "m1",
+  "schema_version": "1.0.0",
+  "entrypoints": {
+    "scaffold": "scripts/scaffold_project.py",
+    "project_validator": "scripts/validate_project.py",
+    "ledger_validator": "scripts/validate_ledger.py",
+    "workflow": "scripts/workflow.py",
+    "export_preflight": "scripts/preflight_export.py"
+  },
+  "fixtures_are_official": false,
+  "integrity": {
+    "algorithm": "sha256",
+    "bundle_hash": "78b321720d1dc4453fa2a40ce3f3ea144b5ba1834da1fbd79efeb7b3ee341455",
+    "files": {
+      "SKILL.md": "b258353c858bf814c54bb71d8e2386607b3c48b53243bd4d4706870a3b52f023",
+      "agents/openai.yaml": "c6e6c9c5785814239f3286c47b13ef063fedac50564857b97716f51717d5a20e",
+      "references/ADAPTATION-PROTOCOL.md": "6e2edeb62140ae4b6a420f62f34349fb5084fbac5ddf8993b4aa32ece6b12f36",
+      "references/ASSESSMENT-PROTOCOL.md": "087bc096f679c111b30daaf72b984b4e7b8f1292415186ad50cda80f50086798",
+      "references/DRAFTING-PROTOCOL.md": "8ce801cbe99b245192a9c87c49e68774c6f48b6fb2c27449c28c74dc20389474",
+      "references/EVIDENCE-PROTOCOL.md": "0cbde42dce57c9e46db7f693707d2d014661315ae0f82e1133543f38003c4a34",
+      "references/MAPPING-PROTOCOL.md": "fb974bf23d1f53754f0847be5b508c9107eee8cecf6b371b8b1c22365c4b1f9f",
+      "references/OUTLINE-FORMAT.md": "4e4e0453f464ad438c3c288db1ca32413e4edae7144b9fe1c8a9c2b9a6a156b3",
+      "references/PROJECT-BRIEF.md": "eda1cbaea9cf9de4ecaeeed87f606b6670dcc34dfb474cf49c9d2189aaf5994d",
+      "references/QA-CHECKLISTS.md": "a809f92890d3dbba0d0b3af0204380888544debc1a97d9b6a7afda10e9ef14ba",
+      "schemas/disclosure-ledger.schema.json": "a47d9d19323b16d0f965d38c7a96376a69868e07b74ca1f2b346ca59c4a0e245",
+      "schemas/project.schema.json": "08032aaa3c26c74dbeb848a417750b90358d0b2b3ae094ac5a2db85d9d852209",
+      "scripts/preflight_export.py": "b738178b156d4a1db5ff49e675e0217ece5ca7405775aed5b7e4e356ca53f064",
+      "scripts/report_harness/__init__.py": "9d788c5c6431adc77f8c00334c4ee1b2dcea2c9cc2c0221a53e75c1233905dc6",
+      "scripts/report_harness/audit.py": "11dff01d1cb05380b57d3496dc0f3cd7e409bdba184e425500f8d8d42a77a136",
+      "scripts/report_harness/command.py": "27a0be41a8aff30c816203ad65506acd6b1a6c94b92f6852a815d5ecfef354cb",
+      "scripts/report_harness/config.py": "909b869a896f9b5bc897c4a0de808e10b2dccee1a42a4aedafa1394023293d8a",
+      "scripts/report_harness/errors.py": "8e4aefdaf23e1c4bbefe0b3d4baeb8cee875cc8758df6b0310ad993400dffa40",
+      "scripts/report_harness/io.py": "49b4a93ab6f5331a729fdbff59488bec21216a5d31bbb9a4b6343cad13b3cfbb",
+      "scripts/report_harness/ledger.py": "2aa5b26f034564792b34145e66f135cf1b00e930cf34fe66bf713ef818d4a666",
+      "scripts/report_harness/manifest.py": "a4429231fe20874829cd3ef46713d39d379779c84a7b6ff7f6e13ec9f6f1b25a",
+      "scripts/report_harness/models.py": "ed32f4b435f7cf1f012b26fe6da207de304dc27d7f66cf4ab8f9442c6841b3b8",
+      "scripts/report_harness/project.py": "dc522877198f53a6482ed8a6c493a3e166812073d70ab61ce2e31588218df0f9",
+      "scripts/report_harness/workflow.py": "fc7487e1390e175fae01ba843e2ababe9f9bac2c1be41246bc016beb6482d181",
+      "scripts/scaffold_project.py": "1295ba355b5c09e86e818f2775c3ba570dd4bfffadfce6c911eff681c7998719",
+      "scripts/update_manifest.py": "100b2577fa0ab6ccc1ff3ddab926c3b35ac6c4c7232cef244e3cdc5073dc18be",
+      "scripts/validate_examples.py": "a5c0de3a526da910315db2336f1d248f305788322b8b7d2ad1e9d498e774075f",
+      "scripts/validate_ledger.py": "178038891f6f5876197b1ff77e5b026f46ef1c7787cf9f66179c507e512716d2",
+      "scripts/validate_project.py": "8d71edf6ca578c52ecc390aefe87f5b9ef898573d492a0bf1781cecee87981c8",
+      "scripts/workflow.py": "8687247a39a25d78e0b824335f8a0c905aaed854c1dab3836159e86a80e8d251",
+      "standards/fixtures/simulated-standard-a.json": "94e7cb7365bf69637cfaf620268563ff14d4a017a800ad78a4177ed816a9406f",
+      "templates/project/brief.md": "60f6ae97913e89c755cb9c9d23747da1b92908b13781caec612683623623815d",
+      "templates/project/project.yaml.template": "4c39674c878ba1869fe88be134ec63dd5c36152e245e2b72091e85b8b238dba9"
+    }
+  }
+}
