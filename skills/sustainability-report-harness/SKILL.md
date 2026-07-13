@@ -32,6 +32,7 @@ Resolve paths relative to this `SKILL.md`. Use scripts in `scripts/`:
 - `build_draft.py` / `review_draft.py`: write Anchor/master proposals into the ledger and persist
   item-level human decisions.
 - `export_project.py`: generate the internal DOCX/XLSX review package or a gate-approved clean DOCX.
+- `review_export.py`: validate the current internal package and approve the Export Checkpoint.
 - `validate_project.py`: validate directories, configuration, workflow, and ledger.
 - `workflow.py`: read state, update Checkpoints, and perform allowed transitions.
 - `validate_ledger.py`: validate models, stable IDs, and references.
@@ -101,7 +102,7 @@ and finalize the Anchor before creating the remaining master sections.
 
 After master review, read [EXPORT-PROTOCOL.md](references/EXPORT-PROTOCOL.md) and run
 `export_project.py <project-dir> internal`. Treat Word and Excel as derived review files. Run clean
-export only after master/export approval and a passing preflight.
+export only after `review_export.py` approves the current internal artifacts and preflight.
 
 ### Resume
 

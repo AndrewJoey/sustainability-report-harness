@@ -71,6 +71,17 @@ def test_xlsx_preserves_formula_and_cached_value(tmp_path: Path):
     assert result.items[1].locator["formula_status"] == "not_recalculated"
 
 
+def test_xlsx_preserves_formula_without_a_cached_value(tmp_path: Path):
+    source = tmp_path / "uncached-formula.xlsx"
+    write_xlsx(source, with_formula=True, formula_has_cached_value=False)
+
+    result = parse_xlsx(source)
+
+    assert result.items[1].locator["formulas"] == {"C2": "B2*2"}
+    assert result.items[1].locator["formula_status"] == "not_recalculated"
+    assert "=B2*2" in result.items[1].excerpt
+
+
 def test_empty_xlsx_is_not_claimed_as_parsed_evidence(tmp_path: Path):
     source = tmp_path / "empty.xlsx"
     write_xlsx(source, empty=True)

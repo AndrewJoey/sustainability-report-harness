@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +14,7 @@ from .docx_export import write_master_docx
 from .errors import HarnessError
 from .io import read_json, read_jsonl, write_json
 from .ledger import preflight_clean_export, validate_ledger
-from .outline import OUTLINE_JSON
+from .outline import OUTLINE_JSON, validate_outline
 from .standards import LOCK_PATH
 from .workflow import WorkflowStore, utc_now
 from .xlsx_export import write_review_workbook
@@ -26,6 +27,7 @@ INTERNAL_FILES = {
     "evidence_list": "evidence_list.xlsx",
     "peer_assessment": "peer_assessment.xlsx",
 }
+EXPORT_MODES = {"internal", "clean"}
 
 RESPONSE_HEADERS = [
     "准则名称",
@@ -95,10 +97,23 @@ def export_project(project_dir: Path, *, mode: str) -> dict[str, Any]:
     if errors:
         raise HarnessError("INVALID_LEDGER", "Export requires a valid ledger", details=errors)
     outline = read_json(project_dir / OUTLINE_JSON)
+    outline_errors = validate_outline(outline, ledger)
+    if outline_errors:
+        raise HarnessError(
+            "INVALID_OUTLINE",
+            "Export requires an outline consistent with the current requirement union",
+            details={"errors": outline_errors},
+        )
     config = load_project_config(project_dir)
     _assert_complete_master(outline, ledger)
 
     if mode == "clean":
+        if not config["deliverables"]["master_report"]:
+            raise HarnessError(
+                "DELIVERABLE_DISABLED",
+                "Clean master report export is disabled in project.yaml",
+                "deliverables.master_report",
+            )
         blockers = preflight_clean_export(ledger)
         if workflow["checkpoints"]["master"]["status"] != "approved":
             blockers.append({"reason": "master Checkpoint is not approved"})
@@ -155,8 +170,67 @@ def export_project(project_dir: Path, *, mode: str) -> dict[str, Any]:
     }
 
 
+def approve_export(
+    project_dir: Path, *, reviewed_by: str, notes: str | None = None
+) -> dict[str, Any]:
+    """Approve clean export only after current internal artifacts pass every gate."""
+
+    project_dir = project_dir.resolve()
+    if not reviewed_by.strip():
+        raise HarnessError("APPROVER_REQUIRED", "reviewed_by is required")
+    store = WorkflowStore(project_dir)
+    workflow = store.load()
+    if workflow["workflow_state"] != "awaiting_export_confirmation":
+        raise HarnessError(
+            "EXPORT_REVIEW_NOT_ALLOWED",
+            "Export review requires awaiting_export_confirmation",
+            "workflow_state",
+        )
+    ledger = read_jsonl(project_dir / LEDGER_PATH)
+    ledger_errors = validate_ledger(ledger)
+    outline = read_json(project_dir / OUTLINE_JSON)
+    outline_errors = validate_outline(outline, ledger)
+    blockers: list[Any] = [*ledger_errors, *outline_errors, *preflight_clean_export(ledger)]
+    if workflow["checkpoints"]["master"]["status"] != "approved":
+        blockers.append("master Checkpoint is not approved")
+    manifest_path = project_dir / "outputs/internal/export_manifest.json"
+    if not manifest_path.is_file():
+        blockers.append("current internal export manifest is missing")
+    else:
+        blockers.extend(validate_export_manifest(project_dir, "internal"))
+    if blockers:
+        raise HarnessError(
+            "EXPORT_REVIEW_BLOCKED",
+            "Export approval failed deterministic preflight",
+            details={"blockers": blockers},
+        )
+    store.set_checkpoint(
+        "export",
+        "approved",
+        approved_by=reviewed_by,
+        artifacts=["outputs/internal/export_manifest.json"],
+        notes=notes,
+    )
+    store.transition("ready_for_export")
+    append_event(
+        project_dir,
+        project_id=str(load_project_config(project_dir)["project_id"]),
+        event="export.approved",
+        message="Clean export approved after deterministic preflight",
+        details={"reviewed_by": reviewed_by, "notes": notes},
+    )
+    return {
+        "valid": True,
+        "workflow_state": "ready_for_export",
+        "checkpoint": "export",
+        "reviewed_by": reviewed_by,
+    }
+
+
 def validate_export_manifest(project_dir: Path, mode: str) -> list[str]:
     project_dir = project_dir.resolve()
+    if mode not in EXPORT_MODES:
+        return [f"export manifest: unsupported mode {mode}"]
     path = project_dir / "outputs" / mode / "export_manifest.json"
     if not path.is_file():
         return []
@@ -168,16 +242,35 @@ def validate_export_manifest(project_dir: Path, mode: str) -> list[str]:
         return [str(exc)]
     if manifest.get("mode") != mode:
         errors.append(f"{path}: mode does not match directory")
+    if manifest.get("schema_version") != "1.0.0":
+        errors.append(f"{path}: schema_version must be 1.0.0")
+    if manifest.get("ledger_path") != LEDGER_PATH.as_posix():
+        errors.append(f"{path}: ledger_path must be {LEDGER_PATH.as_posix()}")
+    if not isinstance(manifest.get("generated_at"), str) or not manifest["generated_at"]:
+        errors.append(f"{path}: generated_at is required")
     current_hash = _json_hash(ledger)
+    if not isinstance(manifest.get("ledger_hash"), str) or not re.fullmatch(
+        r"[0-9a-f]{64}", manifest["ledger_hash"]
+    ):
+        errors.append(f"{path}: ledger_hash must be a SHA-256 digest")
     if manifest.get("ledger_hash") != current_hash:
         errors.append(f"{path}: outputs are stale relative to disclosure_ledger.jsonl")
+    try:
+        expected_sources = _source_hashes(project_dir)
+    except HarnessError as exc:
+        errors.append(f"{path}: cannot validate source inputs: {exc}")
+    else:
+        if manifest.get("source_hashes") != expected_sources:
+            errors.append(f"{path}: outputs are stale relative to outline/config/standards inputs")
     files = manifest.get("files")
     if not isinstance(files, list):
         return errors + [f"{path}: files list required"]
+    listed_paths: list[str] = []
     for index, item in enumerate(files):
         if not isinstance(item, dict) or not isinstance(item.get("path"), str):
             errors.append(f"{path}: files[{index}] path required")
             continue
+        listed_paths.append(item["path"])
         output = (project_dir / item["path"]).resolve()
         try:
             output.relative_to(project_dir / "outputs" / mode)
@@ -190,6 +283,15 @@ def validate_export_manifest(project_dir: Path, mode: str) -> list[str]:
             errors.append(f"{path}: hash mismatch for {item['path']}")
         if item.get("source_ledger_hash") != manifest.get("ledger_hash"):
             errors.append(f"{path}: ledger hash mismatch for {item['path']}")
+    if len(listed_paths) != len(set(listed_paths)):
+        errors.append(f"{path}: duplicate file paths")
+    try:
+        expected_files = _expected_export_files(project_dir, mode)
+    except HarnessError as exc:
+        errors.append(f"{path}: cannot determine deliverables: {exc}")
+        expected_files = set()
+    if set(listed_paths) != expected_files:
+        errors.append(f"{path}: file list does not match the required {mode} deliverables")
     return errors
 
 
@@ -200,34 +302,45 @@ def _write_internal_outputs(
     ledger: list[dict[str, Any]],
     project_dir: Path,
 ) -> list[Path]:
-    report = output_dir / INTERNAL_FILES["master_report"]
-    write_master_docx(report, config=config, outline=outline, ledger=ledger, internal=True)
+    enabled = {
+        "master_report": config["deliverables"]["master_report"],
+        "response_matrix": config["deliverables"]["response_matrix"],
+        "gap_list": config["deliverables"]["gap_list"],
+        "evidence_list": config["deliverables"]["evidence_list"],
+        # FR-10 requires the independent peer track in every M4 internal package.
+        "peer_assessment": True,
+    }
+    for key, filename in INTERNAL_FILES.items():
+        path = output_dir / filename
+        if not enabled[key] and path.is_file():
+            path.unlink()
+
+    files: list[Path] = []
+    if enabled["master_report"]:
+        report = output_dir / INTERNAL_FILES["master_report"]
+        write_master_docx(report, config=config, outline=outline, ledger=ledger, internal=True)
+        files.append(report)
+
     response_rows, gap_rows, evidence_rows, peer_rows = _business_rows(project_dir, outline, ledger)
-    response = output_dir / INTERNAL_FILES["response_matrix"]
-    gaps = output_dir / INTERNAL_FILES["gap_list"]
-    evidence = output_dir / INTERNAL_FILES["evidence_list"]
+    workbook_specs = {
+        "response_matrix": ("回应矩阵", "准则回应矩阵", RESPONSE_HEADERS, response_rows),
+        "gap_list": ("缺口清单", "缺口与补件清单", GAP_HEADERS, gap_rows),
+        "evidence_list": ("证据清单", "内部证据引用清单", EVIDENCE_HEADERS, evidence_rows),
+    }
+    for key, (sheet_name, title, headers, rows) in workbook_specs.items():
+        if not enabled[key]:
+            continue
+        path = output_dir / INTERNAL_FILES[key]
+        write_review_workbook(
+            path,
+            sheet_name=sheet_name,
+            title=title,
+            headers=headers,
+            rows=rows,
+        )
+        files.append(path)
+
     peer = output_dir / INTERNAL_FILES["peer_assessment"]
-    write_review_workbook(
-        response,
-        sheet_name="回应矩阵",
-        title="准则回应矩阵",
-        headers=RESPONSE_HEADERS,
-        rows=response_rows,
-    )
-    write_review_workbook(
-        gaps,
-        sheet_name="缺口清单",
-        title="缺口与补件清单",
-        headers=GAP_HEADERS,
-        rows=gap_rows,
-    )
-    write_review_workbook(
-        evidence,
-        sheet_name="证据清单",
-        title="内部证据引用清单",
-        headers=EVIDENCE_HEADERS,
-        rows=evidence_rows,
-    )
     write_review_workbook(
         peer,
         sheet_name="同行评价",
@@ -235,7 +348,8 @@ def _write_internal_outputs(
         headers=PEER_HEADERS,
         rows=peer_rows,
     )
-    return [report, response, gaps, evidence, peer]
+    files.append(peer)
+    return files
 
 
 def _business_rows(
@@ -433,6 +547,7 @@ def _export_manifest(
         "generated_at": utc_now(),
         "ledger_path": LEDGER_PATH.as_posix(),
         "ledger_hash": ledger_hash,
+        "source_hashes": _source_hashes(project_dir),
         "files": [
             {
                 "path": path.relative_to(project_dir).as_posix(),
@@ -442,6 +557,31 @@ def _export_manifest(
             for path in files
         ],
     }
+
+
+def _source_hashes(project_dir: Path) -> dict[str, str]:
+    return {
+        "outline": _json_hash(read_json(project_dir / OUTLINE_JSON)),
+        "project_config": _json_hash(load_project_config(project_dir)),
+        "standards_lock": _json_hash(read_json(project_dir / LOCK_PATH)),
+    }
+
+
+def _expected_export_files(project_dir: Path, mode: str) -> set[str]:
+    config = load_project_config(project_dir)
+    if mode == "clean":
+        return (
+            {"outputs/clean/master_report_clean.docx"}
+            if config["deliverables"]["master_report"]
+            else set()
+        )
+    enabled = {
+        key
+        for key in ("master_report", "response_matrix", "gap_list", "evidence_list")
+        if config["deliverables"][key]
+    }
+    enabled.add("peer_assessment")
+    return {f"outputs/internal/{INTERNAL_FILES[key]}" for key in enabled}
 
 
 def _json_hash(value: Any) -> str:

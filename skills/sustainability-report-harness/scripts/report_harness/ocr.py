@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+import re
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from .audit import append_event
@@ -70,9 +71,10 @@ def record_ocr_decision(
             "INVALID_OCR_SOURCE", "OCR decisions require an existing PDF", source_file
         )
 
+    canonical_source = source_path.relative_to(project_dir).as_posix()
     manifest = read_jsonl(project_dir / "state/source_manifest.jsonl")
     manifest_record = next(
-        (item for item in manifest if item.get("source_file") == source_file), None
+        (item for item in manifest if item.get("source_file") == canonical_source), None
     )
     if not manifest_record or manifest_record.get("status") not in {
         "needs_ocr",
@@ -82,18 +84,18 @@ def record_ocr_decision(
         raise HarnessError(
             "OCR_DECISION_NOT_ALLOWED",
             "Source is not currently classified as a scanned PDF needing a decision",
-            source_file,
+            canonical_source,
         )
     source_hash = sha256_file(source_path)
     if source_hash != manifest_record.get("source_hash"):
         raise HarnessError(
             "SOURCE_CHANGED",
             "Source changed after ingestion; ingest it again before recording a decision",
-            source_file,
+            canonical_source,
         )
 
     record = {
-        "source_file": source_file,
+        "source_file": canonical_source,
         "source_hash": source_hash,
         "decision": decision,
         "criticality": criticality,
@@ -102,17 +104,22 @@ def record_ocr_decision(
         "notes": notes,
     }
     path = project_dir / DECISION_PATH
-    records = [item for item in read_jsonl(path) if item.get("source_file") != source_file]
+    records = [item for item in read_jsonl(path) if item.get("source_file") != canonical_source]
     records.append(record)
     records.sort(key=lambda item: item["source_file"])
+    errors = validate_ocr_decisions(records)
+    if errors:
+        raise HarnessError(
+            "INVALID_OCR_DECISIONS", "OCR decisions are invalid", details={"errors": errors}
+        )
     write_jsonl(path, records)
     append_event(
         project_dir,
         project_id=str(load_project_config(project_dir)["project_id"]),
         event="ocr.decision_recorded",
-        message=f"OCR fallback selected for {source_file}",
+        message=f"OCR fallback selected for {canonical_source}",
         details={
-            "source_file": source_file,
+            "source_file": canonical_source,
             "source_hash": source_hash,
             "decision": decision,
             "criticality": criticality,
@@ -127,9 +134,58 @@ def decision_for_source(
 ) -> dict[str, Any] | None:
     for record in read_jsonl(project_dir / DECISION_PATH):
         if record.get("source_file") == source_file and record.get("source_hash") == source_hash:
+            errors = validate_ocr_decisions([record])
+            if errors:
+                raise HarnessError(
+                    "INVALID_OCR_DECISIONS",
+                    "Matching OCR decision is invalid",
+                    details={"errors": errors},
+                )
             return record
     return None
 
 
 def list_ocr_decisions(project_dir: Path) -> list[dict[str, Any]]:
     return read_jsonl(project_dir.resolve() / DECISION_PATH)
+
+
+def validate_ocr_decisions(records: list[dict[str, Any]]) -> list[str]:
+    """Validate persisted decisions without executing or authorizing OCR."""
+
+    errors: list[str] = []
+    seen: set[tuple[str, str]] = set()
+    for index, record in enumerate(records, start=1):
+        prefix = f"line {index}"
+        source_file = record.get("source_file")
+        if not isinstance(source_file, str) or not source_file:
+            errors.append(f"{prefix}.source_file: non-empty string required")
+        else:
+            source_path = PurePosixPath(source_file)
+            if (
+                source_path.is_absolute()
+                or ".." in source_path.parts
+                or not source_file.startswith(("sources/client/", "sources/peer/"))
+                or source_path.suffix.lower() != ".pdf"
+            ):
+                errors.append(f"{prefix}.source_file: must be a PDF under a source root")
+        source_hash = record.get("source_hash")
+        if not isinstance(source_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", source_hash):
+            errors.append(f"{prefix}.source_hash: SHA-256 hex digest required")
+        pair = (str(source_file), str(source_hash))
+        if pair in seen:
+            errors.append(f"{prefix}: duplicate source/hash decision")
+        seen.add(pair)
+        decision = record.get("decision")
+        criticality = record.get("criticality")
+        if decision not in DECISIONS:
+            errors.append(f"{prefix}.decision: invalid decision")
+        if criticality not in CRITICALITIES:
+            errors.append(f"{prefix}.criticality: invalid criticality")
+        if decision == "skip_as_gap" and criticality != "noncritical":
+            errors.append(f"{prefix}: a critical source cannot be skipped")
+        for field in ("decided_by", "decided_at"):
+            if not isinstance(record.get(field), str) or not record[field].strip():
+                errors.append(f"{prefix}.{field}: non-empty string required")
+        if record.get("notes") is not None and not isinstance(record.get("notes"), str):
+            errors.append(f"{prefix}.notes: string or null required")
+    return errors

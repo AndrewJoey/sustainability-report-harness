@@ -17,7 +17,9 @@ Do not edit exported files to create new business judgments. Update the ledger a
 
 ## Clean package gate
 
-Run clean export only after the master and export Checkpoints are approved and preflight reports no
-unconfirmed inference, suggested text, information gap, rejected item, or stale output. The clean
+Run `review_export.py` after generating the internal package. It approves the Export Checkpoint only
+when the manifest matches the current ledger, outline, project configuration, standards lock, and
+files, and preflight reports no unreviewed content, inference, suggested text, information gap,
+rejected item, or stale output. The clean
 DOCX omits internal markers, comments, and information-gap content. Any ledger change makes an older
 manifest stale and requires regeneration.

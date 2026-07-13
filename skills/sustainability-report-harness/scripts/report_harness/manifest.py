@@ -32,19 +32,26 @@ def build_manifest(skill_dir: Path) -> dict[str, Any]:
     files = calculate_file_hashes(skill_dir)
     return {
         "name": "sustainability-report-harness",
-        "version": "0.3.0",
-        "maturity": "m3",
+        "version": "0.4.1",
+        "maturity": "m4",
         "schema_version": "1.0.0",
         "entrypoints": {
             "scaffold": "scripts/scaffold_project.py",
             "source_ingestion": "scripts/ingest_sources.py",
+            "ocr_review": "scripts/review_ocr.py",
             "standards": "scripts/standards.py",
             "union_builder": "scripts/build_requirement_union.py",
             "union_review": "scripts/review_requirement_union.py",
+            "outline_builder": "scripts/build_outline.py",
+            "outline_review": "scripts/review_outline.py",
+            "draft_builder": "scripts/build_draft.py",
+            "draft_review": "scripts/review_draft.py",
             "project_validator": "scripts/validate_project.py",
             "ledger_validator": "scripts/validate_ledger.py",
             "workflow": "scripts/workflow.py",
             "export_preflight": "scripts/preflight_export.py",
+            "project_export": "scripts/export_project.py",
+            "export_review": "scripts/review_export.py",
         },
         "fixtures_are_official": False,
         "integrity": {
@@ -62,11 +69,22 @@ def validate_manifest(skill_dir: Path) -> list[str]:
     except (OSError, json.JSONDecodeError) as exc:
         return [f"manifest.json: {exc}"]
     actual = calculate_file_hashes(skill_dir)
+    expected_manifest = build_manifest(skill_dir)
     expected = manifest.get("integrity", {}).get("files")
     errors: list[str] = []
+    for field in (
+        "name",
+        "version",
+        "maturity",
+        "schema_version",
+        "entrypoints",
+        "fixtures_are_official",
+    ):
+        if manifest.get(field) != expected_manifest[field]:
+            errors.append(f"manifest.json: {field} does not match the release contract")
     if expected != actual:
         errors.append("manifest.json: file checksums do not match the Skill contents")
     bundle_hash = manifest.get("integrity", {}).get("bundle_hash")
-    if bundle_hash != calculate_bundle_hash(actual):
+    if bundle_hash != expected_manifest["integrity"]["bundle_hash"]:
         errors.append("manifest.json: bundle hash does not match the Skill contents")
     return errors

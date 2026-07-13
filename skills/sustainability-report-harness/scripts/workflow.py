@@ -7,6 +7,7 @@ import argparse
 from pathlib import Path
 
 from report_harness.command import run
+from report_harness.errors import HarnessError
 from report_harness.workflow import CHECKPOINT_STATUSES, CHECKPOINTS, WORKFLOW_STATES, WorkflowStore
 
 
@@ -37,6 +38,12 @@ def main() -> int:
         if args.command == "transition":
             return store.transition(args.state)
         if args.command == "checkpoint":
+            if args.name not in {"data_consent", "project_spec"}:
+                raise HarnessError(
+                    "DOMAIN_REVIEW_REQUIRED",
+                    f"Checkpoint {args.name} must be updated by its stage-specific review command",
+                    args.name,
+                )
             return store.set_checkpoint(
                 args.name,
                 args.status,

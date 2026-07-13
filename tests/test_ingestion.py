@@ -163,6 +163,58 @@ def test_selected_ocr_tool_remains_blocked_until_ocr_output_exists(tmp_path: Pat
     )
 
 
+def test_changed_ocr_decision_replaces_the_reused_manifest_status(tmp_path: Path):
+    project = create_ingestion_project(tmp_path)
+    write_pdf(project / "sources/client/scan.pdf", text=None)
+    ingest_project_sources(project)
+    record_ocr_decision(
+        project,
+        "./sources/client/scan.pdf",
+        "run_local_ocr",
+        decided_by="consultant",
+        criticality="critical",
+    )
+    ingest_project_sources(project)
+
+    record_ocr_decision(
+        project,
+        "sources/client/scan.pdf",
+        "skip_as_gap",
+        decided_by="consultant",
+        criticality="noncritical",
+    )
+    result = ingest_project_sources(project)
+    manifest = read_jsonl(project / "state/source_manifest.jsonl")
+
+    assert result["valid"] is True
+    assert result["parsed"] == 1
+    assert manifest[0]["status"] == "skipped_by_user"
+    assert manifest[0]["ocr_decision"] == "skip_as_gap"
+
+
+def test_project_validation_rejects_corrupted_ocr_decisions(tmp_path: Path):
+    project = create_ingestion_project(tmp_path)
+    write_jsonl(
+        project / "state/ocr_decisions.jsonl",
+        [
+            {
+                "source_file": "../../outside.pdf",
+                "source_hash": "invalid",
+                "decision": "skip_as_gap",
+                "criticality": "critical",
+                "decided_by": "",
+                "decided_at": "",
+                "notes": None,
+            }
+        ],
+    )
+
+    errors = validate_project(project)
+
+    assert any("must be a PDF under a source root" in error for error in errors)
+    assert any("critical source cannot be skipped" in error for error in errors)
+
+
 def test_ingestion_does_not_advance_an_empty_project(tmp_path: Path):
     project = create_ingestion_project(tmp_path)
 

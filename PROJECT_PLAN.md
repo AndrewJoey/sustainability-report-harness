@@ -68,7 +68,8 @@
 | D-19 | M3 确定性核心只校验和持久化拆解与映射；Agent 新判断一律 `unreviewed`，由顾问在 Evidence Checkpoint 决定 |
 | D-20 | OCR 作为 Human-in-the-loop 能力选择：Harness 发现可用选项并记录用户决定，不静默调用本地或云服务；只有明确非关键来源可跳过为缺口 |
 | D-21 | M4 由 Agent 提出目录、正文和评价，确定性核心只验证范围、证据分类、状态与引用；所有新语义判断仍为 `unreviewed` |
-| D-22 | Word、Excel 和 Markdown/JSON 快照全部从披露账本派生，并用导出清单绑定账本哈希和文件哈希，禁止在业务文件中维护独立判断 |
+| D-22 | Word、Excel 和 Markdown/JSON 快照全部从披露账本派生；导出清单必须绑定账本、正式目录、项目配置、准则锁和文件哈希，禁止在业务文件中维护独立判断 |
+| D-23 | Standards、Evidence、Outline、Anchor、Master 和 Export Checkpoint 只能由对应阶段的审阅命令批准；通用 workflow CLI 不得绕过领域校验 |
 
 ## 4. 开发前输入清单
 
@@ -254,6 +255,9 @@
 
 **工程验证**：
 
+- 2026-07-13 完成一次交付后审计，修复 OCR 决策缓存、重复草稿章节、客户/同行证据串用、未审阅事实导出、目录派生字段篡改、通用 Checkpoint 绕过、导出清单输入绑定、交付物配置未生效、manifest 构建器回退到 M3，以及无缓存值 XLSX 公式丢失；
+- `make test`：73 项测试通过；`make lint`、`make validate`、`git diff --check`：通过；
+- manifest 版本和成熟度由构建器固定为 `0.4.1` / `m4`，`make format` 刷新后保持一致；
 - 自动化测试、Ruff、项目验证和 Skill Creator 验证通过；
 - 内部 DOCX 已完成全页结构渲染检查；隔离 LibreOffice 不暴露本机中文字体，文本完整性由 OOXML/解析测试验证；
 - 四份 XLSX 已通过 Artifact Tool 实际导入、内容检查、公式错误扫描和渲染检查。

@@ -390,6 +390,13 @@ class PeerAssessment(SerializableModel):
                 "reviewed_by is required after review",
                 "reviewed_by",
             )
+        if self.peer_position != "not_assessed":
+            require(
+                bool(self.evidence_ids),
+                "PEER_EVIDENCE_REQUIRED",
+                "A peer position other than not_assessed requires peer evidence",
+                "evidence_ids",
+            )
 
 
 def _require_nonempty(model: object, *fields: str) -> None:

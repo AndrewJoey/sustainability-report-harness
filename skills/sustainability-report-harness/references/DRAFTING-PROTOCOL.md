@@ -20,4 +20,5 @@ Generate one representative section with its evidence links, matrix rows, and ga
 The Anchor proposal must contain only the selected `anchor_section_id`. The master proposal must
 contain all remaining outline sections. Use `review_draft.py item` for each content, standards
 assessment, and peer assessment; finalize the Anchor before building the master. Rebuilding must
-preserve accepted or human-edited content when its stable ID is unchanged.
+preserve human-edited content when its stable ID is unchanged; changed Agent proposals return to
+review.

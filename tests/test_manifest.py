@@ -13,10 +13,11 @@ def test_manifest_build_is_deterministic():
     assert first == second
     assert first["integrity"]["bundle_hash"] == calculate_bundle_hash(first["integrity"]["files"])
     assert first["fixtures_are_official"] is False
-    assert first["version"] == "0.3.0"
-    assert first["maturity"] == "m3"
+    assert first["version"] == "0.4.1"
+    assert first["maturity"] == "m4"
     assert first["entrypoints"]["source_ingestion"] == "scripts/ingest_sources.py"
     assert first["entrypoints"]["union_builder"] == "scripts/build_requirement_union.py"
+    assert first["entrypoints"]["export_review"] == "scripts/review_export.py"
 
 
 def test_all_json_schemas_parse():

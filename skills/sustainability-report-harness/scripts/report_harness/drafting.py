@@ -13,7 +13,7 @@ from .errors import HarnessError
 from .io import atomic_write_text, read_json, read_jsonl, write_json, write_jsonl
 from .ledger import validate_ledger
 from .models import Assessment, DisclosureContent, PeerAssessment
-from .outline import OUTLINE_JSON
+from .outline import OUTLINE_JSON, validate_outline
 from .workflow import WorkflowStore, utc_now
 
 LEDGER_PATH = Path("state/disclosure_ledger.jsonl")
@@ -63,6 +63,13 @@ def build_draft(
 
     outline = read_json(project_dir / OUTLINE_JSON)
     ledger = read_jsonl(project_dir / LEDGER_PATH)
+    outline_errors = validate_outline(outline, ledger)
+    if outline_errors:
+        raise HarnessError(
+            "INVALID_OUTLINE",
+            "Drafting requires an outline consistent with the current requirement union",
+            details={"errors": outline_errors},
+        )
     proposal = read_json(proposal_path.resolve())
     scope_sections = _stage_scope(project_dir, outline, stage)
     normalized = _normalize_proposal(proposal, stage, scope_sections, outline, ledger, project_dir)
@@ -162,6 +169,10 @@ def review_draft_item(
         raise HarnessError("ITEM_NOT_FOUND", f"Unknown {COLLECTION_IDS[collection]} {item_id}")
     if decision == "edited" and not changes:
         raise HarnessError("CHANGES_REQUIRED", "An edited decision requires field changes")
+    if decision != "edited" and changes:
+        raise HarnessError(
+            "INVALID_REVIEW_CHANGE", "Field changes require the edited review decision"
+        )
     target.update(changes)
     target["review_status"] = decision
     if collection == "content" and decision == "edited":
@@ -338,7 +349,12 @@ def _normalize_proposal(
     sections = proposal.get("sections")
     if not isinstance(sections, list):
         raise HarnessError("INVALID_DRAFT_PROPOSAL", "sections list is required")
-    proposed_ids = {item.get("section_id") for item in sections if isinstance(item, dict)}
+    if not all(isinstance(item, dict) for item in sections):
+        raise HarnessError("INVALID_DRAFT_PROPOSAL", "Every section must be an object")
+    proposed_id_list = [item.get("section_id") for item in sections]
+    if len(proposed_id_list) != len(set(proposed_id_list)):
+        raise HarnessError("DUPLICATE_SECTION", "Draft proposal section IDs must be unique")
+    proposed_ids = set(proposed_id_list)
     if proposed_ids != scope_sections:
         raise HarnessError(
             "INVALID_DRAFT_SCOPE",

@@ -257,7 +257,14 @@ uv run python skills/sustainability-report-harness/scripts/export_project.py \
 
 内部输出包括 `master_report_internal.docx`、`response_matrix.xlsx`、`gap_list.xlsx`、`evidence_list.xlsx`、`peer_assessment.xlsx` 和带哈希的 `export_manifest.json`。账本变更后旧输出会被判定为过期。
 
-干净版还需要 Master 和 Export Checkpoint 获批，并通过预检：
+内部包完成后，由顾问执行受控的 Export 审核。该命令会检查账本、目录、配置、准则锁、文件哈希和全部内容状态：
+
+```text
+uv run python skills/sustainability-report-harness/scripts/review_export.py \
+  /absolute/path/to/client-project --reviewed-by "顾问姓名"
+```
+
+审核通过后才能生成干净版：
 
 ```text
 uv run python skills/sustainability-report-harness/scripts/export_project.py \

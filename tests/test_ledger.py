@@ -102,6 +102,15 @@ def test_clean_export_blocks_unconfirmed_suggestion():
     ]
 
 
+def test_clean_export_blocks_unreviewed_confirmed_fact():
+    record = deepcopy(valid_record())
+    record["content"][0]["review_status"] = "unreviewed"
+
+    blockers = preflight_clean_export([record])
+
+    assert blockers[0]["reason"] == ("confirmed_fact has not been accepted or edited by a reviewer")
+
+
 def test_human_confirmed_suggestion_can_pass_content_gate():
     record = deepcopy(valid_record())
     content = record["content"][0]
@@ -110,3 +119,26 @@ def test_human_confirmed_suggestion_can_pass_content_gate():
     content["evidence_ids"] = []
     content["confirmation_note"] = "顾问已核实并改写"
     assert preflight_clean_export([record]) == []
+
+
+def test_ledger_rejects_peer_evidence_in_customer_content_and_standard_assessment():
+    record = deepcopy(valid_record())
+    record["evidence"][0]["classification"] = "peer_reference"
+
+    errors = validate_ledger([record])
+
+    assert any("report content requires client_evidence" in error for error in errors)
+    assert any("standards assessment requires client_evidence" in error for error in errors)
+
+
+def test_ledger_rejects_duplicate_requirement_assessments_and_invalid_row_status():
+    record = deepcopy(valid_record())
+    duplicate = deepcopy(record["assessments"][0])
+    duplicate["assessment_id"] = "SIM-ASMT-002"
+    record["assessments"].append(duplicate)
+    record["review_status"] = "draft"
+
+    errors = validate_ledger([record])
+
+    assert any("assessments: requirement IDs must be unique" in error for error in errors)
+    assert any("review_status: invalid review status" in error for error in errors)

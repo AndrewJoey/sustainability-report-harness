@@ -244,8 +244,9 @@ def _xlsx_rows(
             formula = _xlsx_cell_formula(cell)
             if reference and formula:
                 formulas[reference] = formula
-            if reference and value:
-                values.append((reference, value))
+            display_value = value or (f"={formula}" if formula else "")
+            if reference and display_value:
+                values.append((reference, display_value))
         if not values:
             continue
         start, end = values[0][0], values[-1][0]

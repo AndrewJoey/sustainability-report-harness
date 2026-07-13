@@ -12,8 +12,8 @@ from m4_helpers import (
 )
 from report_harness.drafting import finalize_draft
 from report_harness.errors import HarnessError
-from report_harness.exporting import export_project, validate_export_manifest
-from report_harness.workflow import WorkflowStore
+from report_harness.exporting import approve_export, export_project, validate_export_manifest
+from report_harness.io import read_json, read_yaml, write_json, write_yaml
 
 
 def test_internal_export_contains_markers_comments_and_fixed_workbooks(tmp_path: Path):
@@ -44,12 +44,10 @@ def test_clean_export_remains_blocked_by_information_gaps(tmp_path: Path):
     build_anchor(project, tmp_path)
     complete_master(project, tmp_path)
     finalize_draft(project, "master", reviewed_by="consultant")
-    store = WorkflowStore(project)
-    store.set_checkpoint("export", "approved", approved_by="consultant")
-    store.transition("ready_for_export")
+    export_project(project, mode="internal")
 
-    with pytest.raises(HarnessError, match="CLEAN_EXPORT_BLOCKED"):
-        export_project(project, mode="clean")
+    with pytest.raises(HarnessError, match="EXPORT_REVIEW_BLOCKED"):
+        approve_export(project, reviewed_by="consultant")
 
 
 def test_clean_export_after_human_resolution_has_no_internal_markers(tmp_path: Path):
@@ -58,9 +56,8 @@ def test_clean_export_after_human_resolution_has_no_internal_markers(tmp_path: P
     build_anchor(project, tmp_path)
     complete_master(project, tmp_path, convert_gaps=True)
     finalize_draft(project, "master", reviewed_by="consultant")
-    store = WorkflowStore(project)
-    store.set_checkpoint("export", "approved", approved_by="consultant")
-    store.transition("ready_for_export")
+    export_project(project, mode="internal")
+    approve_export(project, reviewed_by="consultant")
 
     export_project(project, mode="clean")
     report = project / "outputs/clean/master_report_clean.docx"
@@ -73,3 +70,64 @@ def test_clean_export_after_human_resolution_has_no_internal_markers(tmp_path: P
     assert "[信息缺口]" not in document
     assert "word/comments.xml" not in names
     assert validate_export_manifest(project, "clean") == []
+
+
+def test_export_rejects_an_outline_with_tampered_derived_coverage(tmp_path: Path):
+    project, _ = prepare_outline_project(tmp_path)
+    build_and_approve_outline(project, tmp_path)
+    build_anchor(project, tmp_path)
+    complete_master(project, tmp_path)
+    outline_path = project / "state/outline.json"
+    outline = read_json(outline_path)
+    outline["sections"][0]["evidence_coverage"]["total_requirements"] = 999
+    write_json(outline_path, outline)
+
+    with pytest.raises(HarnessError, match="INVALID_OUTLINE"):
+        export_project(project, mode="internal")
+
+
+def test_export_manifest_binds_all_inputs_and_required_files(tmp_path: Path):
+    project, _ = prepare_outline_project(tmp_path)
+    build_and_approve_outline(project, tmp_path)
+    build_anchor(project, tmp_path)
+    complete_master(project, tmp_path)
+    export_project(project, mode="internal")
+    manifest_path = project / "outputs/internal/export_manifest.json"
+    manifest = read_json(manifest_path)
+    manifest["files"] = []
+    write_json(manifest_path, manifest)
+
+    errors = validate_export_manifest(project, "internal")
+
+    assert any("file list does not match" in error for error in errors)
+
+    export_project(project, mode="internal")
+    outline_path = project / "state/outline.json"
+    outline = read_json(outline_path)
+    outline["sections"][0]["title"] = "Changed after export"
+    write_json(outline_path, outline)
+
+    errors = validate_export_manifest(project, "internal")
+
+    assert any("outline/config/standards inputs" in error for error in errors)
+
+
+def test_internal_export_respects_disabled_deliverables(tmp_path: Path):
+    project, _ = prepare_outline_project(tmp_path)
+    build_and_approve_outline(project, tmp_path)
+    build_anchor(project, tmp_path)
+    complete_master(project, tmp_path)
+    config_path = project / "project.yaml"
+    config = read_yaml(config_path)
+    config["deliverables"]["gap_list"] = False
+    config["deliverables"]["evidence_list"] = False
+    write_yaml(config_path, config)
+
+    result = export_project(project, mode="internal")
+
+    assert len(result["files"]) == 3
+    assert "outputs/internal/gap_list.xlsx" not in result["files"]
+    assert "outputs/internal/evidence_list.xlsx" not in result["files"]
+    assert not (project / "outputs/internal/gap_list.xlsx").exists()
+    assert not (project / "outputs/internal/evidence_list.xlsx").exists()
+    assert validate_export_manifest(project, "internal") == []

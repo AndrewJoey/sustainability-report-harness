@@ -126,6 +126,13 @@ def ingest_project_sources(project_dir: Path, *, force: bool = False) -> dict[st
         from .ocr import decision_for_source
 
         pending_ocr_decision = decision_for_source(project_dir, relative, source_hash)
+        pending_ocr_name = pending_ocr_decision.get("decision") if pending_ocr_decision else None
+        previous_ocr_name = previous.get("ocr_decision") if previous else None
+        ocr_decision_changed = bool(
+            previous
+            and previous.get("status") in {"needs_ocr", "awaiting_ocr_action", "skipped_by_user"}
+            and previous_ocr_name != pending_ocr_name
+        )
         reusable = (
             not force
             and previous
@@ -134,7 +141,7 @@ def ingest_project_sources(project_dir: Path, *, force: bool = False) -> dict[st
             and previous.get("status")
             in {"parsed", "needs_ocr", "awaiting_ocr_action", "skipped_by_user", "empty"}
             and all(item in evidence_by_id for item in previous.get("evidence_ids", []))
-            and not (previous.get("status") == "needs_ocr" and pending_ocr_decision)
+            and not ocr_decision_changed
         )
         if reusable:
             source_evidence = [evidence_by_id[item] for item in previous["evidence_ids"]]

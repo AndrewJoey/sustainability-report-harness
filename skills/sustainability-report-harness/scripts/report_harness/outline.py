@@ -144,6 +144,8 @@ def validate_outline(outline: Any, ledger: list[dict[str, Any]]) -> list[str]:
         for row in ledger
         if isinstance(row.get("unified_disclosure"), dict)
     }
+    if outline.get("source_ledger_hash") != _ledger_hash(ledger):
+        errors.append("source_ledger_hash: outline inputs changed; rebuild the formal outline")
     seen_sections: set[str] = set()
     assigned: list[str] = []
     for index, section in enumerate(sections):
@@ -174,12 +176,55 @@ def validate_outline(outline: Any, ledger: list[dict[str, Any]]) -> list[str]:
         if unknown:
             errors.append(f"{prefix}.unified_ids: unknown IDs {sorted(unknown)}")
         assigned.extend(unified_ids)
+        if not unknown:
+            rows = [known_unified[unified_id] for unified_id in unified_ids]
+            expected_requirements = [
+                item["requirement_id"] for row in rows for item in row.get("requirements", [])
+            ]
+            accepted_links = [
+                item
+                for row in rows
+                for item in row.get("evidence_links", [])
+                if item.get("review_status") in {"accepted", "edited"}
+                and item.get("relationship") in {"direct", "supporting"}
+            ]
+            expected_evidence = sorted({item["evidence_id"] for item in accepted_links})
+            covered_requirements = {
+                requirement_id
+                for item in accepted_links
+                for requirement_id in item.get("requirement_ids", [])
+            }
+            expected_gaps = sorted({item["gap_id"] for row in rows for item in row.get("gaps", [])})
+            if section.get("requirement_ids") != expected_requirements:
+                errors.append(f"{prefix}.requirement_ids: inconsistent with the ledger")
+            if section.get("evidence_ids") != expected_evidence:
+                errors.append(f"{prefix}.evidence_ids: inconsistent with reviewed evidence links")
+            if section.get("expected_gap_ids") != expected_gaps:
+                errors.append(f"{prefix}.expected_gap_ids: inconsistent with the ledger")
+            if section.get("evidence_coverage") != {
+                "covered_requirements": len(covered_requirements),
+                "total_requirements": len(expected_requirements),
+            }:
+                errors.append(f"{prefix}.evidence_coverage: inconsistent with the ledger")
+        for field in ("tables", "cases", "chart_suggestions"):
+            value = section.get(field)
+            if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+                errors.append(f"{prefix}.{field}: list of strings required")
     if len(assigned) != len(set(assigned)):
         errors.append("sections.unified_ids: each unified disclosure must appear exactly once")
     if set(assigned) != set(known_unified):
         errors.append("sections.unified_ids: must cover the complete requirement union")
     if outline.get("anchor_section_id") not in seen_sections:
         errors.append("anchor_section_id: must reference one formal outline section")
+    expected_target = sum(
+        section.get("target_length_words", 0)
+        for section in sections
+        if isinstance(section, dict)
+        and isinstance(section.get("target_length_words"), int)
+        and not isinstance(section.get("target_length_words"), bool)
+    )
+    if outline.get("target_length_words") != expected_target:
+        errors.append("target_length_words: must equal the sum of section budgets")
     conflicts = outline.get("conflicts")
     if not isinstance(conflicts, list):
         errors.append("conflicts: list required")
@@ -344,5 +389,20 @@ def _string_list(value: Any, path: str) -> list[str]:
 
 
 def _ledger_hash(ledger: list[dict[str, Any]]) -> str:
-    payload = json.dumps(ledger, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    outline_inputs = [
+        {
+            key: row.get(key)
+            for key in (
+                "ledger_id",
+                "unified_disclosure",
+                "requirements",
+                "mappings",
+                "evidence_links",
+                "gaps",
+                "review_status",
+            )
+        }
+        for row in ledger
+    ]
+    payload = json.dumps(outline_inputs, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode()).hexdigest()

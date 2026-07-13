@@ -14,6 +14,7 @@ from .ingestion import validate_evidence_file, validate_source_manifest
 from .io import atomic_write_text, read_jsonl, write_yaml
 from .ledger import validate_ledger_file
 from .mapping import validate_union_completeness
+from .ocr import validate_ocr_decisions
 from .outline import validate_outline
 from .standards import validate_project_standard_lock
 from .workflow import WorkflowStore, validate_workflow
@@ -36,6 +37,7 @@ PROJECT_FILES = (
     "state/workflow.json",
     "state/source_manifest.jsonl",
     "state/evidence.jsonl",
+    "state/ocr_decisions.jsonl",
     "state/disclosure_ledger.jsonl",
     "state/outline.md",
     "logs/harness.jsonl",
@@ -156,6 +158,12 @@ def validate_project(project_dir: Path) -> list[str]:
             errors.extend(
                 validate_evidence_file(evidence, manifest if manifest.is_file() else None)
             )
+        except HarnessError as exc:
+            errors.append(str(exc))
+    ocr_decisions = project_dir / "state" / "ocr_decisions.jsonl"
+    if ocr_decisions.is_file():
+        try:
+            errors.extend(validate_ocr_decisions(read_jsonl(ocr_decisions)))
         except HarnessError as exc:
             errors.append(str(exc))
     errors.extend(validate_project_standard_lock(project_dir))

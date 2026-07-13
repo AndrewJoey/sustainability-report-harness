@@ -27,6 +27,7 @@ REQUIRED_ENTRY_FIELDS = {
     "assessments",
     "review_status",
 }
+ENTRY_REVIEW_STATUSES = {"unreviewed", "accepted", "rejected", "edited"}
 
 
 def validate_ledger_file(path: Path) -> list[str]:
@@ -55,6 +56,8 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
             errors.append(f"{prefix}.ledger_id: duplicate ID {ledger_id}")
         else:
             ledger_ids.add(ledger_id)
+        if record.get("review_status") not in ENTRY_REVIEW_STATUSES:
+            errors.append(f"{prefix}.review_status: invalid review status")
 
         unified = _model(UnifiedDisclosure, record.get("unified_disclosure"), prefix, errors)
         requirements = _models(
@@ -91,6 +94,7 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
         unified_ids.add(unified.unified_id)
         requirement_ids = {item.requirement_id for item in requirements}
         evidence_ids = {item.evidence_id for item in evidence}
+        evidence_by_id = {item.evidence_id: item for item in evidence}
         content_ids = {item.content_id for item in content}
         _duplicates(requirement_ids, requirements, "requirement_id", prefix, errors)
         _duplicates(evidence_ids, evidence, "evidence_id", prefix, errors)
@@ -138,6 +142,27 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
                 f"{prefix}.content.{item.content_id}.evidence_ids",
                 errors,
             )
+            for evidence_id in item.evidence_ids:
+                linked_evidence = evidence_by_id.get(evidence_id)
+                if linked_evidence and linked_evidence.classification != "client_evidence":
+                    errors.append(
+                        f"{prefix}.content.{item.content_id}: report content requires "
+                        "client_evidence"
+                    )
+            if item.content_type == "confirmed_fact" and not item.evidence_ids:
+                errors.append(
+                    f"{prefix}.content.{item.content_id}: confirmed_fact requires client evidence"
+                )
+            if item.content_type == "information_gap" and item.evidence_ids:
+                errors.append(
+                    f"{prefix}.content.{item.content_id}: information_gap cannot cite evidence"
+                )
+        assessment_requirement_ids = [item.requirement_id for item in assessments]
+        if assessments:
+            if len(assessment_requirement_ids) != len(set(assessment_requirement_ids)):
+                errors.append(f"{prefix}.assessments: requirement IDs must be unique")
+            if set(assessment_requirement_ids) != requirement_ids:
+                errors.append(f"{prefix}.assessments: must cover every requirement exactly once")
         for item in assessments:
             _global_id(item.assessment_id, assessment_ids_global, "assessment_id", prefix, errors)
             if item.requirement_id not in requirement_ids:
@@ -154,7 +179,21 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
                 f"{prefix}.assessments.{item.assessment_id}.evidence_ids",
                 errors,
             )
-        evidence_by_id = {item.evidence_id: item for item in evidence}
+            for evidence_id in item.evidence_ids:
+                linked_evidence = evidence_by_id.get(evidence_id)
+                if linked_evidence and linked_evidence.classification != "client_evidence":
+                    errors.append(
+                        f"{prefix}.assessments.{item.assessment_id}: standards assessment "
+                        "requires client_evidence"
+                    )
+        peer_requirement_ids = [item.requirement_id for item in peer_assessments]
+        if peer_assessments:
+            if len(peer_requirement_ids) != len(set(peer_requirement_ids)):
+                errors.append(f"{prefix}.peer_assessments: requirement IDs must be unique")
+            if set(peer_requirement_ids) != requirement_ids:
+                errors.append(
+                    f"{prefix}.peer_assessments: must cover every requirement exactly once"
+                )
         for item in peer_assessments:
             _global_id(
                 item.peer_assessment_id,
@@ -194,13 +233,10 @@ def preflight_clean_export(records: list[dict[str, Any]]) -> list[dict[str, str]
             evidence_ids = raw.get("evidence_ids") or []
             confirmation_note = raw.get("confirmation_note")
             reason: str | None = None
-            if content_type == "information_gap":
-                reason = "information_gap cannot enter a clean export"
-            elif content_type in {"inference", "suggested_text"} and review_status not in {
-                "accepted",
-                "edited",
-            }:
+            if review_status not in {"accepted", "edited"}:
                 reason = f"{content_type} has not been accepted or edited by a reviewer"
+            elif content_type == "information_gap":
+                reason = "information_gap cannot enter a clean export"
             elif (
                 content_type in {"inference", "suggested_text"}
                 and not evidence_ids

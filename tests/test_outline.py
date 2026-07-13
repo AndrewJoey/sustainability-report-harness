@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 from m4_helpers import outline_plan, prepare_outline_project
 from report_harness.errors import HarnessError
-from report_harness.io import read_json, write_json
-from report_harness.outline import build_formal_outline, review_outline
+from report_harness.io import read_json, read_jsonl, write_json
+from report_harness.outline import build_formal_outline, review_outline, validate_outline
 from report_harness.workflow import WorkflowStore
 
 
@@ -77,3 +77,19 @@ def test_unresolved_outline_conflict_requires_human_resolution(tmp_path: Path):
 
     with pytest.raises(HarnessError, match="OUTLINE_CONFLICTS_UNRESOLVED"):
         review_outline(project, "approved", reviewed_by="consultant")
+
+
+def test_outline_detects_changed_requirement_inputs_and_derived_fields(tmp_path: Path):
+    project, _ = prepare_outline_project(tmp_path)
+    proposal = tmp_path / "outline.json"
+    write_json(proposal, outline_plan())
+    build_formal_outline(project, proposal)
+    outline = read_json(project / "state/outline.json")
+    ledger = read_jsonl(project / "state/disclosure_ledger.jsonl")
+
+    outline["sections"][0]["requirement_ids"] = []
+    ledger[0]["requirements"][0]["check_text"] = "Changed after outline generation"
+    errors = validate_outline(outline, ledger)
+
+    assert any("source_ledger_hash" in error for error in errors)
+    assert any("requirement_ids: inconsistent" in error for error in errors)

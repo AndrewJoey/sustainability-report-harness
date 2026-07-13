@@ -1,5 +1,6 @@
 """M4 Anchor/master drafting tests mapped to AC-05, AC-06, and AC-22 through AC-24."""
 
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -76,6 +77,39 @@ def test_anchor_human_edit_survives_agent_rebuild(tmp_path: Path):
 
     assert preserved["text"] == "顾问人工修改后的模拟 Anchor 正文。"
     assert preserved["last_modified_by"] == "human"
+
+
+def test_draft_rejects_duplicate_section_entries(tmp_path: Path):
+    project, _ = prepare_outline_project(tmp_path)
+    build_and_approve_outline(project, tmp_path)
+    proposal = draft_proposal(project, stage="anchor", section_ids={"SEC-ENV"})
+    proposal["sections"].append(deepcopy(proposal["sections"][0]))
+    proposal_path = tmp_path / "duplicate-section.json"
+    write_json(proposal_path, proposal)
+
+    with pytest.raises(HarnessError, match="DUPLICATE_SECTION"):
+        build_draft(project, proposal_path, stage="anchor")
+
+
+def test_non_edited_review_cannot_change_content_fields(tmp_path: Path):
+    project, _ = prepare_outline_project(tmp_path)
+    build_and_approve_outline(project, tmp_path)
+    build_anchor(project, tmp_path)
+    content_id = next(
+        item["content_id"]
+        for row in read_jsonl(project / "state/disclosure_ledger.jsonl")
+        for item in row["content"]
+    )
+
+    with pytest.raises(HarnessError, match="INVALID_REVIEW_CHANGE"):
+        review_draft_item(
+            project,
+            "content",
+            content_id,
+            "accepted",
+            reviewed_by="consultant",
+            changes={"text": "This change must be recorded as edited."},
+        )
 
 
 def test_approved_anchor_unlocks_complete_master_generation(tmp_path: Path):
