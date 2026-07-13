@@ -6,7 +6,16 @@ from pathlib import Path
 from typing import Any
 
 from .io import read_jsonl
-from .models import Assessment, DisclosureContent, Evidence, Requirement, UnifiedDisclosure
+from .models import (
+    Assessment,
+    DisclosureContent,
+    Evidence,
+    EvidenceGap,
+    EvidenceLink,
+    Requirement,
+    RequirementMapping,
+    UnifiedDisclosure,
+)
 
 REQUIRED_ENTRY_FIELDS = {
     "ledger_id",
@@ -27,6 +36,9 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
     errors: list[str] = []
     ledger_ids: set[str] = set()
     unified_ids: set[str] = set()
+    mapping_ids: set[str] = set()
+    link_ids: set[str] = set()
+    gap_ids: set[str] = set()
     for index, record in enumerate(records):
         prefix = f"line {index + 1}"
         missing = REQUIRED_ENTRY_FIELDS - record.keys()
@@ -45,6 +57,16 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
             Requirement, record.get("requirements"), f"{prefix}.requirements", errors
         )
         evidence = _models(Evidence, record.get("evidence"), f"{prefix}.evidence", errors)
+        mappings = _models(
+            RequirementMapping, record.get("mappings", []), f"{prefix}.mappings", errors
+        )
+        evidence_links = _models(
+            EvidenceLink,
+            record.get("evidence_links", []),
+            f"{prefix}.evidence_links",
+            errors,
+        )
+        gaps = _models(EvidenceGap, record.get("gaps", []), f"{prefix}.gaps", errors)
         content = _models(DisclosureContent, record.get("content"), f"{prefix}.content", errors)
         assessments = _models(
             Assessment, record.get("assessments"), f"{prefix}.assessments", errors
@@ -70,6 +92,30 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
             errors.append(
                 f"{prefix}.unified_disclosure.requirement_ids: missing records {missing_text}"
             )
+        if mappings:
+            mapped_requirement_ids = [item.requirement_id for item in mappings]
+            if set(mapped_requirement_ids) != set(unified.requirement_ids):
+                errors.append(
+                    f"{prefix}.mappings: must cover each unified requirement exactly once"
+                )
+            if len(mapped_requirement_ids) != len(set(mapped_requirement_ids)):
+                errors.append(f"{prefix}.mappings: requirement IDs must be unique")
+        for mapping in mappings:
+            _global_id(mapping.mapping_id, mapping_ids, "mapping_id", prefix, errors)
+        for link in evidence_links:
+            _global_id(link.link_id, link_ids, "link_id", prefix, errors)
+            if link.evidence_id not in evidence_ids:
+                errors.append(f"{prefix}.evidence_links.{link.link_id}: unknown evidence_id")
+            _missing_refs(
+                link.requirement_ids,
+                requirement_ids,
+                f"{prefix}.evidence_links.{link.link_id}.requirement_ids",
+                errors,
+            )
+        for gap in gaps:
+            _global_id(gap.gap_id, gap_ids, "gap_id", prefix, errors)
+            if gap.requirement_id not in requirement_ids:
+                errors.append(f"{prefix}.gaps.{gap.gap_id}: unknown requirement_id")
         for item in content:
             if unified.unified_id not in item.unified_ids:
                 errors.append(
@@ -170,3 +216,9 @@ def _missing_refs(values: list[str], known: set[str], path: str, errors: list[st
     missing = set(values) - known
     if missing:
         errors.append(f"{path}: unknown references {sorted(missing)}")
+
+
+def _global_id(value: str, known: set[str], field: str, path: str, errors: list[str]) -> None:
+    if value in known:
+        errors.append(f"{path}.{field}: duplicate ID {value}")
+    known.add(value)

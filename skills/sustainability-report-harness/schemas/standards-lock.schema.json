@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sustainability-report-harness/standards-lock.schema.json",
+  "title": "Project Standards Lock",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "confirmed_by",
+    "locked_at",
+    "standards",
+    "lock_hash"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "confirmed_by": {"type": "string", "minLength": 1},
+    "locked_at": {"type": "string", "format": "date-time"},
+    "standards": {"type": "array", "minItems": 1},
+    "lock_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "additionalProperties": false
+}

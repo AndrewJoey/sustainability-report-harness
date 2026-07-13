@@ -52,6 +52,12 @@ class StandardVersion(SerializableModel):
         _require_date(self.effective_from, "effective_from")
         if self.effective_to is not None:
             _require_date(self.effective_to, "effective_to")
+            require(
+                date.fromisoformat(self.effective_to) >= date.fromisoformat(self.effective_from),
+                "INVALID_DATE_RANGE",
+                "effective_to must be on or after effective_from",
+                "effective_to",
+            )
         require(
             self.review_status in self.REVIEW_STATUSES,
             "INVALID_ENUM",
@@ -120,6 +126,124 @@ class UnifiedDisclosure(SerializableModel):
             f"review_status must be one of {sorted(self.REVIEW_STATUSES)}",
             "review_status",
         )
+
+
+@dataclass(slots=True)
+class RequirementMapping(SerializableModel):
+    mapping_id: str
+    requirement_id: str
+    mapping_type: str
+    difference_notes: str
+    review_status: str
+    mapped_by: str
+    reviewed_by: str | None = None
+    review_notes: str | None = None
+
+    MAPPING_TYPES: ClassVar[set[str]] = {
+        "equivalent",
+        "overlapping",
+        "broader_than",
+        "narrower_than",
+        "unique",
+    }
+    REVIEW_STATUSES: ClassVar[set[str]] = {
+        "unreviewed",
+        "accepted",
+        "rejected",
+        "edited",
+    }
+    MAPPERS: ClassVar[set[str]] = {"agent", "human"}
+
+    def validate(self) -> None:
+        _require_nonempty(self, "mapping_id", "requirement_id", "difference_notes")
+        _require_enum(self.mapping_type, self.MAPPING_TYPES, "mapping_type")
+        _require_enum(self.review_status, self.REVIEW_STATUSES, "review_status")
+        _require_enum(self.mapped_by, self.MAPPERS, "mapped_by")
+        if self.mapped_by == "agent":
+            require(
+                self.review_status == "unreviewed" or bool(self.reviewed_by),
+                "REVIEWER_REQUIRED",
+                "Agent mappings must remain unreviewed until a reviewer is recorded",
+                "reviewed_by",
+            )
+        if self.review_status != "unreviewed":
+            require(
+                isinstance(self.reviewed_by, str) and bool(self.reviewed_by.strip()),
+                "REVIEWER_REQUIRED",
+                "reviewed_by is required after review",
+                "reviewed_by",
+            )
+
+
+@dataclass(slots=True)
+class EvidenceLink(SerializableModel):
+    link_id: str
+    evidence_id: str
+    requirement_ids: list[str]
+    relationship: str
+    review_status: str
+    reviewed_by: str | None = None
+    notes: str | None = None
+
+    RELATIONSHIPS: ClassVar[set[str]] = {"direct", "supporting", "contradicting"}
+    REVIEW_STATUSES: ClassVar[set[str]] = {
+        "unreviewed",
+        "accepted",
+        "rejected",
+        "edited",
+    }
+
+    def validate(self) -> None:
+        _require_nonempty(self, "link_id", "evidence_id")
+        require(bool(self.requirement_ids), "MISSING_VALUE", "requirement_ids cannot be empty")
+        _require_unique(self.requirement_ids, "requirement_ids")
+        _require_enum(self.relationship, self.RELATIONSHIPS, "relationship")
+        _require_enum(self.review_status, self.REVIEW_STATUSES, "review_status")
+        if self.review_status != "unreviewed":
+            require(
+                isinstance(self.reviewed_by, str) and bool(self.reviewed_by.strip()),
+                "REVIEWER_REQUIRED",
+                "reviewed_by is required after review",
+                "reviewed_by",
+            )
+        if self.relationship == "contradicting":
+            require(
+                isinstance(self.notes, str) and bool(self.notes.strip()),
+                "MISSING_VALUE",
+                "Contradicting evidence requires notes",
+                "notes",
+            )
+
+
+@dataclass(slots=True)
+class EvidenceGap(SerializableModel):
+    gap_id: str
+    requirement_id: str
+    reason: str
+    criticality: str
+    review_status: str
+    reviewed_by: str | None = None
+    notes: str | None = None
+
+    CRITICALITIES: ClassVar[set[str]] = {"needs_confirmation", "critical", "noncritical"}
+    REVIEW_STATUSES: ClassVar[set[str]] = {
+        "unreviewed",
+        "accepted",
+        "rejected",
+        "edited",
+    }
+
+    def validate(self) -> None:
+        _require_nonempty(self, "gap_id", "requirement_id", "reason")
+        _require_enum(self.criticality, self.CRITICALITIES, "criticality")
+        _require_enum(self.review_status, self.REVIEW_STATUSES, "review_status")
+        if self.review_status != "unreviewed":
+            require(
+                isinstance(self.reviewed_by, str) and bool(self.reviewed_by.strip()),
+                "REVIEWER_REQUIRED",
+                "reviewed_by is required after review",
+                "reviewed_by",
+            )
 
 
 @dataclass(slots=True)

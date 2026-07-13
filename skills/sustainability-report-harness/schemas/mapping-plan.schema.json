@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sustainability-report-harness/mapping-plan.schema.json",
+  "title": "Requirement Mapping Plan",
+  "type": "object",
+  "required": ["schema_version", "unified_disclosures"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "unified_disclosures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "unified_id",
+          "title",
+          "description",
+          "mappings",
+          "evidence_links"
+        ],
+        "properties": {
+          "unified_id": {"type": "string", "minLength": 1},
+          "title": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1},
+          "mapping_notes": {"type": ["string", "null"]},
+          "mappings": {"type": "array", "minItems": 1},
+          "evidence_links": {"type": "array"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

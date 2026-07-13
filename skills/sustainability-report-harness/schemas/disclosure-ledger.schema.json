@@ -16,11 +16,13 @@
     "ledger_id": {"type": "string", "minLength": 1},
     "unified_disclosure": {"type": "object"},
     "requirements": {"type": "array"},
+    "mappings": {"type": "array"},
     "evidence": {"type": "array"},
+    "evidence_links": {"type": "array"},
+    "gaps": {"type": "array"},
     "content": {"type": "array"},
     "assessments": {"type": "array"},
     "review_status": {"enum": ["unreviewed", "accepted", "rejected", "edited"]}
   },
   "additionalProperties": false
 }
-

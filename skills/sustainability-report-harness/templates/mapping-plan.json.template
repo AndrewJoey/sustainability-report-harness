@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "unified_disclosures": [
+    {
+      "unified_id": "UNI-001",
+      "title": "待审阅统一披露标题",
+      "description": "待审阅统一披露要求",
+      "mapping_notes": "保留范围、期间、限定条件和定量差异。",
+      "mappings": [
+        {
+          "mapping_id": "MAP-001",
+          "requirement_id": "REQ-001",
+          "mapping_type": "unique",
+          "difference_notes": "说明此要求与同组其他要求的差异。",
+          "review_status": "unreviewed",
+          "mapped_by": "agent",
+          "reviewed_by": null,
+          "review_notes": null
+        }
+      ],
+      "evidence_links": []
+    }
+  ]
+}

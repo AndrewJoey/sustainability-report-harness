@@ -1,4 +1,4 @@
 interface:
   display_name: "可持续披露报告 Harness"
-  short_description: "创建、解析并恢复可追溯的多准则可持续披露项目"
-  default_prompt: "Use $sustainability-report-harness to create or resume a local disclosure project and build its evidence library."
+  short_description: "创建证据库、锁定准则并审阅多准则披露并集"
+  default_prompt: "Use $sustainability-report-harness to resume a local disclosure project, build its requirement union, and stop for human review."

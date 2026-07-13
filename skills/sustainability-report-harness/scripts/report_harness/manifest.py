@@ -32,12 +32,15 @@ def build_manifest(skill_dir: Path) -> dict[str, Any]:
     files = calculate_file_hashes(skill_dir)
     return {
         "name": "sustainability-report-harness",
-        "version": "0.2.0",
-        "maturity": "m2",
+        "version": "0.3.0",
+        "maturity": "m3",
         "schema_version": "1.0.0",
         "entrypoints": {
             "scaffold": "scripts/scaffold_project.py",
             "source_ingestion": "scripts/ingest_sources.py",
+            "standards": "scripts/standards.py",
+            "union_builder": "scripts/build_requirement_union.py",
+            "union_review": "scripts/review_requirement_union.py",
             "project_validator": "scripts/validate_project.py",
             "ledger_validator": "scripts/validate_ledger.py",
             "workflow": "scripts/workflow.py",

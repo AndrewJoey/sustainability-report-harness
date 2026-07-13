@@ -2,7 +2,7 @@
 
 这是一个面向可持续发展、ESG 和气候披露咨询团队的本地 AI 能力包。它用于复用客户证据、统一映射多套披露准则，并从同一份披露母版派生不同准则的报告粗稿。
 
-> 当前状态：M2 证据库已经完成。项目可以解析本地 DOCX、文本型 PDF 和 XLSX，保留证据位置，并按文件哈希复用未变化资料；语义映射和报告生成将在 M3–M5 实现。
+> 当前状态：M3 多准则并集已经完成。项目可以锁定准则版本、验证原始条款拆解、构建统一披露要求并持久化人工审核；报告目录和正文生成将在 M4–M5 实现。
 
 ## 产品会帮助你完成什么
 
@@ -21,18 +21,23 @@
 
 ## 当前可以做什么
 
-当前 M2 Harness 可以：
+当前 M3 Harness 可以：
 
 - 创建符合 PRD 公共目录契约的本地项目；
 - 校验 `project.yaml`、工作流和 `disclosure_ledger.jsonl`；
 - 持久化和恢复流程状态及八个 Checkpoint；
 - 阻止跳过前置确认节点；
 - 在干净版导出前列出未确认内容和工作流阻塞项；
-- 使用模拟规则和示例项目运行自动化验证。
+- 使用模拟规则和示例项目运行自动化验证；
 - 解析本地 `.docx`、文本型 `.pdf` 和 `.xlsx` 客户或同行材料；
 - 将 Word 段落/表格、PDF 页/文本块、Excel 工作表/单元格范围写入证据库；
 - 记录 SHA-256、解析状态和证据 ID，第二次运行时复用未变化文件；
 - 对扫描版 PDF 明确提示需要 OCR，并阻止错误推进。
+- 按报告期间推荐准则版本，并由用户确认后锁定；
+- 校验准则包的原始条款、拆解要求、审核信息和内容哈希；
+- 将相同、相近和特有要求组成完整并集，阻止任何原始要求静默丢失；
+- 记录 `direct`、`supporting`、`contradicting` 三类证据关系和明确缺口；
+- 在映射、冲突证据和缺口未经用户确认时阻止进入报告目录阶段。
 
 产品和开发依据包括：
 
@@ -44,7 +49,7 @@
 
 ## 使用方式
 
-当前版本是一个可安装、可复制、可测试的本地 Agent Skill Harness。它已覆盖项目创建、流程状态、数据契约和证据资料解析，但不包含完整报告生成能力。
+当前版本是一个可安装、可复制、可测试的本地 Agent Skill Harness。它已覆盖项目创建、证据解析、准则锁定和多准则要求并集，但不包含完整报告生成能力。
 
 ### 1. 安装 Harness
 
@@ -66,7 +71,7 @@ make validate    校验 Skill、模式和示例项目
 
 ### 2. 在 Agent 中启用 Skill
 
-M1 的核心包位于：
+Skill 的核心包位于：
 
 ```text
 skills/sustainability-report-harness/
@@ -116,8 +121,10 @@ client-project/
 │   └── requirements/
 ├── state/
 │   ├── workflow.json
+│   ├── standards.lock.json       # 锁定准则后生成
 │   ├── source_manifest.jsonl
 │   ├── evidence.jsonl
+│   ├── requirement_union.json    # 构建并集后生成
 │   ├── disclosure_ledger.jsonl
 │   └── outline.md
 ├── drafts/
@@ -145,7 +152,20 @@ uv run python skills/sustainability-report-harness/scripts/validate_project.py \
   /absolute/path/to/client-project
 ```
 
-### 5. 构建证据库
+### 5. 锁定准则版本
+
+Agent 先基于报告期推荐版本，展示来源、生效日期、审核状态和内容哈希。顾问确认后再锁定：
+
+```text
+uv run python skills/sustainability-report-harness/scripts/standards.py lock \
+  /absolute/path/to/client-project \
+  --package /absolute/path/to/reviewed-standard.json \
+  --confirmed-by "顾问姓名"
+```
+
+仓库中的 `simulated-standard-a.json` 和 `simulated-standard-b.json` 仅用于结构测试。只有开发测试时才能显式使用 `--allow-simulated`，不得把它们当成正式准则。
+
+### 6. 构建证据库
 
 完成数据授权、项目规格和准则版本确认后，将资料放入：
 
@@ -163,7 +183,32 @@ uv run python skills/sustainability-report-harness/scripts/ingest_sources.py \
 
 结果保存在 `state/source_manifest.jsonl` 和 `state/evidence.jsonl`。重复运行时，路径、哈希和解析器版本均未变化的文件不会重新解析。当前支持 `.docx`、文本型 `.pdf` 和 `.xlsx`；扫描版 PDF 会标记为需要 OCR，旧版 `.doc`、`.xls` 和加密 PDF 暂不支持。
 
-### 6. 通过人工确认节点
+### 7. 构建多准则要求并集
+
+Agent 根据已锁定规则和证据生成待审阅 mapping plan。所有 Agent 新映射必须为 `unreviewed`，然后运行：
+
+```text
+uv run python skills/sustainability-report-harness/scripts/build_requirement_union.py \
+  /absolute/path/to/client-project \
+  /absolute/path/to/mapping-plan.json
+```
+
+系统会写入 `state/disclosure_ledger.jsonl` 和 `state/requirement_union.json`，并停在 Evidence Checkpoint。
+
+### 8. 记录人工审核并确认 Evidence Checkpoint
+
+通过 `review_requirement_union.py` 分别记录映射、证据关系和缺口决定。所有事项完成后，由顾问明确执行：
+
+```text
+uv run python skills/sustainability-report-harness/scripts/review_requirement_union.py \
+  /absolute/path/to/client-project finalize \
+  --reviewed-by "顾问姓名"
+```
+
+存在未审核或被拒绝的映射、证据关系、冲突证据或缺口时，系统拒绝进入正式目录生成。
+如果顾问要求重新分组或重做映射，可修正 mapping plan 后使用 `--replace`；未变化的人工决定会保留，变化项重新进入待审核状态。
+
+### 9. 通过人工确认节点
 
 工作流包含不可绕过的确认节点：
 
@@ -188,24 +233,30 @@ uv run python skills/sustainability-report-harness/scripts/ingest_sources.py \
 - 推断、建议文本和信息缺口必须明确标记；
 - 人工编辑、已确认准则版本和数据授权不得被静默覆盖。
 
-## M2 的交付边界
+## M3 的交付边界
 
-M2 已交付：
+M3 已交付：
 
 - 自包含的 `sustainability-report-harness` Skill 包；
 - 标准客户项目脚手架；
 - `project.yaml` 和 `disclosure_ledger.jsonl` 模式；
 - 可恢复的工作流与 Checkpoint 状态；
 - 项目、账本和导出前校验器；
-- 模拟规则、示例项目、自动化测试和开发说明。
+- 模拟规则、示例项目、自动化测试和开发说明；
 - DOCX、文本型 PDF 和 XLSX 本地解析；
 - 文件哈希、增量复用、证据定位和显式年份/单位提取；
 - 扫描版 PDF、空文件、空资料集和解析错误的阻塞状态。
+- 准则包、原始条款和可检查要求的完整性校验；
+- 报告期版本推荐、用户确认锁定和防静默升级；
+- 五类跨准则映射、统一披露并集和逐要求完整性检查；
+- 证据多对多关系、矛盾证据、覆盖缺口和分准则覆盖摘要；
+- 映射、证据关系和缺口的 Human-in-the-loop 审核与跨 Agent 恢复。
 
-M2 不会交付：
+M3 不会交付：
 
 - 正式监管准则知识库；
 - 扫描版 PDF OCR、旧版 `.doc`/`.xls` 和复杂嵌入对象解析；
+- 正式监管准则内容和未经专家审核即可使用的语义映射；
 - 完整母版、矩阵或适配稿生成；
 - 正式 Word、Excel 业务成品导出；
 - 第二个 Agent 适配层；
@@ -213,4 +264,4 @@ M2 不会交付：
 
 ## 项目进度
 
-M2 已通过自动化测试和 Skill 验证。当前里程碑及 M3–M5 的阻塞输入以 [PROJECT_PLAN.md](./PROJECT_PLAN.md) 为准。真实领域试用仍需要经过专业人员审核的准则拆解与映射、脱敏客户材料以及人工认可的期望输出；不得用模型猜测代替。
+M3 已通过自动化测试和 Skill 验证。当前里程碑及 M4–M5 的阻塞输入以 [PROJECT_PLAN.md](./PROJECT_PLAN.md) 为准。真实领域试用仍需要经过专业人员审核的正式准则拆解与映射、脱敏客户材料以及人工认可的期望输出；不得用模型猜测代替。

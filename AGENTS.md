@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository has completed its M2 evidence-library milestone. Read these files before changing behavior:
+This repository has completed its M3 multi-standard requirement-union milestone. Read these files before changing behavior:
 
 - `PROJECT_PLAN.md`: status, milestones, dependencies, and handoff instructions.
 - `HARNESS_ARCHITECTURE.md`: Garden-inspired Harness structure and stability protocol.

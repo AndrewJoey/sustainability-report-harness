@@ -12,6 +12,8 @@ from .errors import HarnessError
 from .ingestion import validate_evidence_file, validate_source_manifest
 from .io import atomic_write_text, write_yaml
 from .ledger import validate_ledger_file
+from .mapping import validate_union_completeness
+from .standards import validate_project_standard_lock
 from .workflow import WorkflowStore, validate_workflow
 
 PROJECT_DIRECTORIES = (
@@ -149,4 +151,6 @@ def validate_project(project_dir: Path) -> list[str]:
             )
         except HarnessError as exc:
             errors.append(str(exc))
+    errors.extend(validate_project_standard_lock(project_dir))
+    errors.extend(validate_union_completeness(project_dir))
     return errors

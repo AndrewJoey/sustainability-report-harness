@@ -21,7 +21,10 @@ Operate a local, traceable disclosure project. Keep deterministic state in the p
 Resolve paths relative to this `SKILL.md`. Use scripts in `scripts/`:
 
 - `scaffold_project.py`: create a project without overwriting existing content.
+- `standards.py`: recommend and immutably lock user-confirmed standard packages.
 - `ingest_sources.py`: parse local DOCX, text PDF, and XLSX files into reusable evidence.
+- `build_requirement_union.py`: validate a mapping plan and build the complete ledger union.
+- `review_requirement_union.py`: persist human decisions for mappings, evidence, conflicts, and gaps.
 - `validate_project.py`: validate directories, configuration, workflow, and ledger.
 - `workflow.py`: read state, update Checkpoints, and perform allowed transitions.
 - `validate_ledger.py`: validate models, stable IDs, and references.
@@ -46,6 +49,12 @@ python scripts/scaffold_project.py <project-dir> \
 
 The scaffold defaults cloud processing and web search to false, requires anonymization, and leaves standards unselected. Update these only from explicit user confirmation.
 
+### Lock standards
+
+Use `standards.py recommend` to show versions applicable to the reporting period. Let the
+consultant choose, then run `standards.py lock` with a named confirmer. Never lock a simulated
+package without the explicit development-only flag, and never relabel it as official.
+
 ### Ingest evidence
 
 After data consent, project specification, and standards Checkpoints are approved, place local
@@ -59,6 +68,17 @@ Reuse unchanged files by SHA-256 and parser version. Write source status to
 `state/source_manifest.jsonl` and traceable records to `state/evidence.jsonl`. Use `--force` only
 when the user explicitly wants a supported source reparsed. Treat `needs_ocr`, parse errors, and an
 empty supported-source set as blockers; do not claim that image-only PDFs were parsed.
+
+### Build and review the requirement union
+
+Read [MAPPING-PROTOCOL.md](references/MAPPING-PROTOCOL.md). Create a mapping plan from the locked
+clauses and requirements. Mark every Agent-produced mapping and evidence link `unreviewed`; do not
+encode semantic judgment in deterministic scripts. Run `build_requirement_union.py`, then stop at
+the Evidence Checkpoint.
+
+Use `review_requirement_union.py` only to record decisions the user actually made. Require a named
+reviewer for mappings, evidence relationships, contradicting evidence, and uncovered requirements.
+Run `finalize` only after every item is accepted or edited and every gap has confirmed criticality.
 
 ### Resume
 
@@ -75,10 +95,11 @@ Run `python scripts/workflow.py <project-dir> status`, inspect `project.yaml`, a
 7. Generate and review the complete master draft.
 8. Adapt from the master and pass export preflight.
 
-M2 implements the M1 foundation plus local DOCX, text PDF, and XLSX parsing, evidence location,
-explicit year/unit capture, SHA-256 reuse, and ingestion state persistence. Treat OCR, semantic
-mapping, drafting, assessment, adaptation, and business-file export as later-phase capabilities
-until their implementations and reviewed fixtures exist.
+M3 implements the M2 foundation plus standard-package integrity, version recommendation and lock,
+source-clause completeness, requirement decomposition contracts, the multi-standard union,
+evidence relationships, gap tracking, and persistent human review. Treat OCR, drafting,
+assessment, adaptation, and business-file export as later-phase capabilities. Treat semantic
+mappings as draft until a qualified reviewer approves them.
 
 ## Load stage references only when needed
 

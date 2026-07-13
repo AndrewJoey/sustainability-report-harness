@@ -46,7 +46,10 @@ report-agent/
 │       │   └── QA-CHECKLISTS.md
 │       ├── scripts/
 │       │   ├── scaffold_project.py
+│       │   ├── standards.py
 │       │   ├── ingest_sources.py
+│       │   ├── build_requirement_union.py
+│       │   ├── review_requirement_union.py
 │       │   ├── validate_project.py
 │       │   ├── validate_ledger.py
 │       │   └── preflight_export.py
@@ -70,8 +73,10 @@ client-project/
 │   └── requirements/
 ├── state/
 │   ├── workflow.json
+│   ├── standards.lock.json           # 锁定准则后生成
 │   ├── source_manifest.jsonl
 │   ├── evidence.jsonl
+│   ├── requirement_union.json        # 构建并集后生成
 │   ├── disclosure_ledger.jsonl    # 唯一真相源
 │   └── outline.md
 ├── drafts/
@@ -108,6 +113,9 @@ client-project/
 - M2 以项目相对路径、SHA-256 和解析器版本管理增量复用；Word 保留段落/表格位置，文本型 PDF 保留页/文本块位置，Excel 保留工作表/单元格范围；
 - 扫描版或无可提取文本的 PDF 标记为 `needs_ocr`，不得生成伪证据或推进状态；
 - 构建统一披露要求和 `disclosure_ledger.jsonl`；
+- M3 将已确认准则包完整复制到 `standards.lock.json`，以原始条款清单证明拆解无静默丢失，并以内容哈希防止规则漂移；
+- 每条可检查要求必须且只能进入一个统一披露要求；映射类型、差异、证据关系、矛盾证据和缺口写入账本；
+- Agent 新映射默认 `unreviewed`，确定性脚本不得替顾问接受语义判断；
 - **Checkpoint Evidence**：确认关键缺口、未经审核映射和冲突证据。
 - 基于已确认准则并集和证据覆盖生成正式 `outline.md`；
 - **Checkpoint Outline**：确认章节、篇幅、颗粒度、准则覆盖和预计缺口。

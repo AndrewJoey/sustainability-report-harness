@@ -1,5 +1,6 @@
 {
   "fixture_notice": "SIMULATED STRUCTURAL FIXTURE — NOT AN OFFICIAL STANDARD",
+  "package_status": "simulated",
   "standard_version": {
     "standard_id": "simulated-standard-a",
     "name": "模拟披露准则 A",
@@ -8,8 +9,18 @@
     "effective_to": null,
     "source_uri": "urn:report-agent:simulated-standard-a",
     "review_status": "draft",
-    "content_hash": "simulated-content-not-for-regulatory-use"
+    "content_hash": "eea6f181d9379612c150061d7a920cbf09cf77250a978ff253549a590aee7f58"
   },
+  "clauses": [
+    {
+      "clause_id": "SIM-A-1",
+      "original_text": "模拟条款：说明报告的虚构示例范围。"
+    },
+    {
+      "clause_id": "SIM-A-2",
+      "original_text": "模拟条款：披露虚构排放数据及其统计期间。"
+    }
+  ],
   "requirements": [
     {
       "requirement_id": "SIM-REQ-001",
@@ -21,7 +32,28 @@
       "requirement_level": "custom",
       "conditions": [],
       "review_status": "draft"
+    },
+    {
+      "requirement_id": "SIM-A-REQ-002",
+      "standard_id": "simulated-standard-a",
+      "version_id": "fixture-1",
+      "clause_id": "SIM-A-2",
+      "original_text": "模拟条款：披露虚构排放数据及其统计期间。",
+      "check_text": "披露模拟排放数据。",
+      "requirement_level": "custom",
+      "conditions": [{"type": "period", "value": "reporting_period"}],
+      "review_status": "draft"
+    },
+    {
+      "requirement_id": "SIM-A-REQ-003",
+      "standard_id": "simulated-standard-a",
+      "version_id": "fixture-1",
+      "clause_id": "SIM-A-2",
+      "original_text": "模拟条款：披露虚构排放数据及其统计期间。",
+      "check_text": "说明模拟排放数据的统计期间。",
+      "requirement_level": "custom",
+      "conditions": [{"type": "period", "value": "reporting_period"}],
+      "review_status": "draft"
     }
   ]
 }
-
