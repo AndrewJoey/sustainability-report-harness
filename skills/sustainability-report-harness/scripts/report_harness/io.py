@@ -86,3 +86,12 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
             )
         records.append(value)
     return records
+
+
+def write_jsonl(path: Path, records: list[dict[str, Any]]) -> None:
+    """Atomically write JSON objects as deterministic JSON Lines."""
+
+    text = "".join(
+        json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n" for record in records
+    )
+    atomic_write_text(path, text)

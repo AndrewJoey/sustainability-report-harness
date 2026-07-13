@@ -9,6 +9,7 @@ from typing import Any
 from .audit import append_event
 from .config import load_project_config, validate_project_config
 from .errors import HarnessError
+from .ingestion import validate_evidence_file, validate_source_manifest
 from .io import atomic_write_text, write_yaml
 from .ledger import validate_ledger_file
 from .workflow import WorkflowStore, validate_workflow
@@ -132,6 +133,20 @@ def validate_project(project_dir: Path) -> list[str]:
     if ledger.is_file():
         try:
             errors.extend(validate_ledger_file(ledger))
+        except HarnessError as exc:
+            errors.append(str(exc))
+    manifest = project_dir / "state" / "source_manifest.jsonl"
+    evidence = project_dir / "state" / "evidence.jsonl"
+    if manifest.is_file():
+        try:
+            errors.extend(validate_source_manifest(manifest))
+        except HarnessError as exc:
+            errors.append(str(exc))
+    if evidence.is_file():
+        try:
+            errors.extend(
+                validate_evidence_file(evidence, manifest if manifest.is_file() else None)
+            )
         except HarnessError as exc:
             errors.append(str(exc))
     return errors

@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository has completed its M1 engineering scaffold. Read these files before changing behavior:
+This repository has completed its M2 evidence-library milestone. Read these files before changing behavior:
 
 - `PROJECT_PLAN.md`: status, milestones, dependencies, and handoff instructions.
 - `HARNESS_ARCHITECTURE.md`: Garden-inspired Harness structure and stability protocol.
@@ -33,7 +33,7 @@ Map every change to stable PRD acceptance IDs; never reuse or renumber them. Put
 
 ## Commit & Pull Request Guidelines
 
-There is no Git history yet. Use Conventional Commit style, for example `feat(mapping): add unified disclosure model` or `test(export): block unconfirmed content`. Pull requests must state the related `FR`/`AC` IDs, summarize behavior changes, list tests run, and identify PRD or project-plan updates. Include sample output only when it contains no client data.
+Use Conventional Commit style, for example `feat(mapping): add unified disclosure model` or `test(export): block unconfirmed content`. Pull requests must state the related `FR`/`AC` IDs, summarize behavior changes, list tests run, and identify PRD or project-plan updates. Include sample output only when it contains no client data.
 
 ## Security & Agent Instructions
 

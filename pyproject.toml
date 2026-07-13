@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "PyYAML==6.0.3",
+    "pypdf==6.1.1",
 ]
 
 [dependency-groups]
@@ -26,4 +27,3 @@ extend-exclude = ["examples"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
-

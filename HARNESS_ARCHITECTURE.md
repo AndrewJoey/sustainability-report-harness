@@ -46,6 +46,7 @@ report-agent/
 │       │   └── QA-CHECKLISTS.md
 │       ├── scripts/
 │       │   ├── scaffold_project.py
+│       │   ├── ingest_sources.py
 │       │   ├── validate_project.py
 │       │   ├── validate_ledger.py
 │       │   └── preflight_export.py
@@ -104,6 +105,8 @@ client-project/
 ### Phase 2：证据、准则并集与正式目录
 
 - 解析材料并生成证据库；
+- M2 以项目相对路径、SHA-256 和解析器版本管理增量复用；Word 保留段落/表格位置，文本型 PDF 保留页/文本块位置，Excel 保留工作表/单元格范围；
+- 扫描版或无可提取文本的 PDF 标记为 `needs_ocr`，不得生成伪证据或推进状态；
 - 构建统一披露要求和 `disclosure_ledger.jsonl`；
 - **Checkpoint Evidence**：确认关键缺口、未经审核映射和冲突证据。
 - 基于已确认准则并集和证据覆盖生成正式 `outline.md`；

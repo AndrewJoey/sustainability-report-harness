@@ -2,7 +2,7 @@
 
 这是一个面向可持续发展、ESG 和气候披露咨询团队的本地 AI 能力包。它用于复用客户证据、统一映射多套披露准则，并从同一份披露母版派生不同准则的报告粗稿。
 
-> 当前状态：M1 工程骨架已经完成。项目创建、配置与账本校验、状态恢复、Checkpoint 门禁和模拟示例可以运行；文档解析、语义映射和报告生成将在 M2–M5 实现。
+> 当前状态：M2 证据库已经完成。项目可以解析本地 DOCX、文本型 PDF 和 XLSX，保留证据位置，并按文件哈希复用未变化资料；语义映射和报告生成将在 M3–M5 实现。
 
 ## 产品会帮助你完成什么
 
@@ -21,7 +21,7 @@
 
 ## 当前可以做什么
 
-当前 M1 Harness 可以：
+当前 M2 Harness 可以：
 
 - 创建符合 PRD 公共目录契约的本地项目；
 - 校验 `project.yaml`、工作流和 `disclosure_ledger.jsonl`；
@@ -29,6 +29,10 @@
 - 阻止跳过前置确认节点；
 - 在干净版导出前列出未确认内容和工作流阻塞项；
 - 使用模拟规则和示例项目运行自动化验证。
+- 解析本地 `.docx`、文本型 `.pdf` 和 `.xlsx` 客户或同行材料；
+- 将 Word 段落/表格、PDF 页/文本块、Excel 工作表/单元格范围写入证据库；
+- 记录 SHA-256、解析状态和证据 ID，第二次运行时复用未变化文件；
+- 对扫描版 PDF 明确提示需要 OCR，并阻止错误推进。
 
 产品和开发依据包括：
 
@@ -38,9 +42,9 @@
 - [PROJECT_PLAN.md](./PROJECT_PLAN.md)：当前状态、里程碑、依赖和交接说明；
 - [AGENTS.md](./AGENTS.md)：开发约束和仓库规范。
 
-## M1 使用方式
+## 使用方式
 
-M1 是一个可安装、可复制、可测试的本地 Agent Skill Harness。它首先解决项目创建、配置校验、流程状态和数据契约问题，不包含完整报告生成能力。
+当前版本是一个可安装、可复制、可测试的本地 Agent Skill Harness。它已覆盖项目创建、流程状态、数据契约和证据资料解析，但不包含完整报告生成能力。
 
 ### 1. 安装 Harness
 
@@ -141,7 +145,25 @@ uv run python skills/sustainability-report-harness/scripts/validate_project.py \
   /absolute/path/to/client-project
 ```
 
-### 5. 通过人工确认节点
+### 5. 构建证据库
+
+完成数据授权、项目规格和准则版本确认后，将资料放入：
+
+```text
+sources/client/    客户事实材料
+sources/peer/      同行参考材料
+```
+
+然后运行：
+
+```text
+uv run python skills/sustainability-report-harness/scripts/ingest_sources.py \
+  /absolute/path/to/client-project
+```
+
+结果保存在 `state/source_manifest.jsonl` 和 `state/evidence.jsonl`。重复运行时，路径、哈希和解析器版本均未变化的文件不会重新解析。当前支持 `.docx`、文本型 `.pdf` 和 `.xlsx`；扫描版 PDF 会标记为需要 OCR，旧版 `.doc`、`.xls` 和加密 PDF 暂不支持。
+
+### 6. 通过人工确认节点
 
 工作流包含不可绕过的确认节点：
 
@@ -166,9 +188,9 @@ uv run python skills/sustainability-report-harness/scripts/validate_project.py \
 - 推断、建议文本和信息缺口必须明确标记；
 - 人工编辑、已确认准则版本和数据授权不得被静默覆盖。
 
-## M1 的交付边界
+## M2 的交付边界
 
-M1 已交付：
+M2 已交付：
 
 - 自包含的 `sustainability-report-harness` Skill 包；
 - 标准客户项目脚手架；
@@ -176,11 +198,14 @@ M1 已交付：
 - 可恢复的工作流与 Checkpoint 状态；
 - 项目、账本和导出前校验器；
 - 模拟规则、示例项目、自动化测试和开发说明。
+- DOCX、文本型 PDF 和 XLSX 本地解析；
+- 文件哈希、增量复用、证据定位和显式年份/单位提取；
+- 扫描版 PDF、空文件、空资料集和解析错误的阻塞状态。
 
-M1 不会交付：
+M2 不会交付：
 
 - 正式监管准则知识库；
-- 完整 Word、PDF 和 Excel 解析器；
+- 扫描版 PDF OCR、旧版 `.doc`/`.xls` 和复杂嵌入对象解析；
 - 完整母版、矩阵或适配稿生成；
 - 正式 Word、Excel 业务成品导出；
 - 第二个 Agent 适配层；
@@ -188,4 +213,4 @@ M1 不会交付：
 
 ## 项目进度
 
-M1 已通过自动化测试和 Skill 验证。当前里程碑及 M2–M5 的阻塞输入以 [PROJECT_PLAN.md](./PROJECT_PLAN.md) 为准。真实领域试用仍需要经过专业人员审核的准则拆解与映射、脱敏客户材料以及人工认可的期望输出；不得用模型猜测代替。
+M2 已通过自动化测试和 Skill 验证。当前里程碑及 M3–M5 的阻塞输入以 [PROJECT_PLAN.md](./PROJECT_PLAN.md) 为准。真实领域试用仍需要经过专业人员审核的准则拆解与映射、脱敏客户材料以及人工认可的期望输出；不得用模型猜测代替。

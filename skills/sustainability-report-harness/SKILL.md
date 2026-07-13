@@ -21,6 +21,7 @@ Operate a local, traceable disclosure project. Keep deterministic state in the p
 Resolve paths relative to this `SKILL.md`. Use scripts in `scripts/`:
 
 - `scaffold_project.py`: create a project without overwriting existing content.
+- `ingest_sources.py`: parse local DOCX, text PDF, and XLSX files into reusable evidence.
 - `validate_project.py`: validate directories, configuration, workflow, and ledger.
 - `workflow.py`: read state, update Checkpoints, and perform allowed transitions.
 - `validate_ledger.py`: validate models, stable IDs, and references.
@@ -45,6 +46,20 @@ python scripts/scaffold_project.py <project-dir> \
 
 The scaffold defaults cloud processing and web search to false, requires anonymization, and leaves standards unselected. Update these only from explicit user confirmation.
 
+### Ingest evidence
+
+After data consent, project specification, and standards Checkpoints are approved, place local
+files under `sources/client/` or `sources/peer/`. Then run:
+
+```text
+python scripts/ingest_sources.py <project-dir>
+```
+
+Reuse unchanged files by SHA-256 and parser version. Write source status to
+`state/source_manifest.jsonl` and traceable records to `state/evidence.jsonl`. Use `--force` only
+when the user explicitly wants a supported source reparsed. Treat `needs_ocr`, parse errors, and an
+empty supported-source set as blockers; do not claim that image-only PDFs were parsed.
+
 ### Resume
 
 Run `python scripts/workflow.py <project-dir> status`, inspect `project.yaml`, and read only the references needed for the current state. Preserve human-authored content and existing confirmed values.
@@ -60,7 +75,10 @@ Run `python scripts/workflow.py <project-dir> status`, inspect `project.yaml`, a
 7. Generate and review the complete master draft.
 8. Adapt from the master and pass export preflight.
 
-M1 implements the scaffold, contracts, persistence, validators, and gate enforcement. Treat document parsing, semantic mapping, drafting, assessment, adaptation, and business-file export as later-phase capabilities until their implementations and reviewed fixtures exist.
+M2 implements the M1 foundation plus local DOCX, text PDF, and XLSX parsing, evidence location,
+explicit year/unit capture, SHA-256 reuse, and ingestion state persistence. Treat OCR, semantic
+mapping, drafting, assessment, adaptation, and business-file export as later-phase capabilities
+until their implementations and reviewed fixtures exist.
 
 ## Load stage references only when needed
 
@@ -86,4 +104,3 @@ M1 implements the scaffold, contracts, persistence, validators, and gate enforce
 ## Apply the quality loop
 
 For every supported stage, perform: generate → validate → repair → revalidate → report. Run `validate_project.py` after project changes and `validate_ledger.py` after ledger changes. Before any clean export, run `preflight_export.py` and stop on every listed blocker.
-

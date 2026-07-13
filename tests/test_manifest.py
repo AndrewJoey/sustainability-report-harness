@@ -1,4 +1,4 @@
-"""Skill package integrity tests for M1 release reproducibility."""
+"""Skill package integrity tests for release reproducibility."""
 
 import json
 from pathlib import Path
@@ -13,6 +13,9 @@ def test_manifest_build_is_deterministic():
     assert first == second
     assert first["integrity"]["bundle_hash"] == calculate_bundle_hash(first["integrity"]["files"])
     assert first["fixtures_are_official"] is False
+    assert first["version"] == "0.2.0"
+    assert first["maturity"] == "m2"
+    assert first["entrypoints"]["source_ingestion"] == "scripts/ingest_sources.py"
 
 
 def test_all_json_schemas_parse():
