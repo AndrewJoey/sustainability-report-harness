@@ -12,7 +12,7 @@ from pypdf import PdfReader
 
 from .errors import HarnessError
 
-PARSER_VERSION = "m2.1"
+PARSER_VERSION = "m2.2"
 MAX_EXCERPT_CHARS = 2_000
 
 WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -237,21 +237,29 @@ def _xlsx_rows(
     items: list[ParsedItem] = []
     for row in worksheet.findall(f".//{{{SHEET_NS}}}row"):
         values: list[tuple[str, str]] = []
+        formulas: dict[str, str] = {}
         for cell in row.findall(f"{{{SHEET_NS}}}c"):
             reference = cell.attrib.get("r")
             value = _xlsx_cell_value(cell, shared_strings)
+            formula = _xlsx_cell_formula(cell)
+            if reference and formula:
+                formulas[reference] = formula
             if reference and value:
                 values.append((reference, value))
         if not values:
             continue
         start, end = values[0][0], values[-1][0]
+        locator: dict[str, object] = {
+            "kind": "cell_range",
+            "sheet": sheet_name,
+            "range": start if start == end else f"{start}:{end}",
+        }
+        if formulas:
+            locator["formulas"] = formulas
+            locator["formula_status"] = "not_recalculated"
         items.append(
             ParsedItem(
-                locator={
-                    "kind": "cell_range",
-                    "sheet": sheet_name,
-                    "range": start if start == end else f"{start}:{end}",
-                },
+                locator=locator,
                 excerpt=_clip(" | ".join(value for _, value in values)),
             )
         )
@@ -274,6 +282,13 @@ def _xlsx_cell_value(cell: ElementTree.Element, shared_strings: list[str]) -> st
     if cell_type == "b":
         return "TRUE" if raw == "1" else "FALSE"
     return _normalize_text(raw)
+
+
+def _xlsx_cell_formula(cell: ElementTree.Element) -> str:
+    formula = cell.find(f"{{{SHEET_NS}}}f")
+    if formula is None or formula.text is None:
+        return ""
+    return _normalize_text(formula.text)
 
 
 def _normalize_text(value: str) -> str:

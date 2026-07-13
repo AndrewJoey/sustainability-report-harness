@@ -16,5 +16,5 @@ Confirm client identity, reporting period, report type, purpose, audience, prima
 
 ## M1 boundary
 
-M1 supports creation, validation, confirmation state, and recovery. It does not extract a brief from customer documents automatically.
-
+The Harness supports creation, validation, confirmation state, and recovery. It does not extract a
+project brief from customer documents automatically.

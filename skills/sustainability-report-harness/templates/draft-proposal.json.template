@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "stage": "anchor",
+  "sections": [
+    {
+      "section_id": "SEC-001",
+      "content": [
+        {
+          "content_id": "CNT-001",
+          "section_id": "SEC-001",
+          "text": "仅写入由客户证据支持的事实，或明确标记的建议/缺口。",
+          "content_type": "information_gap",
+          "unified_ids": ["UNI-001"],
+          "evidence_ids": [],
+          "review_status": "unreviewed",
+          "last_modified_by": "agent",
+          "confirmation_note": null
+        }
+      ],
+      "assessments": [],
+      "peer_assessments": []
+    }
+  ]
+}

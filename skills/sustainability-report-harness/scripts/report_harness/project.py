@@ -9,10 +9,12 @@ from typing import Any
 from .audit import append_event
 from .config import load_project_config, validate_project_config
 from .errors import HarnessError
+from .exporting import validate_export_manifest
 from .ingestion import validate_evidence_file, validate_source_manifest
-from .io import atomic_write_text, write_yaml
+from .io import atomic_write_text, read_jsonl, write_yaml
 from .ledger import validate_ledger_file
 from .mapping import validate_union_completeness
+from .outline import validate_outline
 from .standards import validate_project_standard_lock
 from .workflow import WorkflowStore, validate_workflow
 
@@ -99,7 +101,12 @@ def scaffold_project(project_dir: Path, config: dict[str, Any]) -> None:
         project_dir / "state" / "outline.md",
         "# 候选目录\n\n> 正式目录必须在 Evidence Checkpoint 通过后生成并由顾问确认。\n",
     )
-    for filename in ("source_manifest.jsonl", "evidence.jsonl", "disclosure_ledger.jsonl"):
+    for filename in (
+        "source_manifest.jsonl",
+        "evidence.jsonl",
+        "ocr_decisions.jsonl",
+        "disclosure_ledger.jsonl",
+    ):
         atomic_write_text(project_dir / "state" / filename, "")
     WorkflowStore(project_dir).initialize()
     append_event(
@@ -153,4 +160,17 @@ def validate_project(project_dir: Path) -> list[str]:
             errors.append(str(exc))
     errors.extend(validate_project_standard_lock(project_dir))
     errors.extend(validate_union_completeness(project_dir))
+    outline_json = project_dir / "state" / "outline.json"
+    if outline_json.is_file() and ledger.is_file():
+        try:
+            errors.extend(
+                validate_outline(
+                    json.loads(outline_json.read_text(encoding="utf-8")),
+                    read_jsonl(ledger),
+                )
+            )
+        except (OSError, json.JSONDecodeError, HarnessError) as exc:
+            errors.append(f"state/outline.json: {exc}")
+    errors.extend(validate_export_manifest(project_dir, "internal"))
+    errors.extend(validate_export_manifest(project_dir, "clean"))
     return errors

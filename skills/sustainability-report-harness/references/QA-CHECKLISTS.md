@@ -15,6 +15,10 @@ Apply the relevant checklist before approving a Checkpoint.
 - Mapping and evidence-link IDs are unique and all references resolve.
 - Evidence includes source hash and locator.
 - Output names and fixed fields match the PRD.
+- Formal outline covers every unified disclosure exactly once and has an approved Anchor selection.
+- Anchor and master proposals cover only their permitted section scopes.
+- Confirmed facts use accepted client evidence; peer evidence appears only in independent peer review.
+- Internal DOCX/XLSX exports match the current ledger hash and their manifest file hashes.
 - Clean export contains no unresolved content or unapproved gate.
 
 ## Human or model-assisted checks
@@ -25,6 +29,7 @@ Apply the relevant checklist before approving a Checkpoint.
 - Content is accurate, editable, and appropriate in depth.
 - Peer comparison remains separate from compliance response.
 - Improvement suggestions do not invent customer facts.
+- A named reviewer has decided every drafted content block and both assessment tracks.
 
 ## Completion rule
 

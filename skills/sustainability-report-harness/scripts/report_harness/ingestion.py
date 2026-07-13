@@ -123,13 +123,18 @@ def ingest_project_sources(project_dir: Path, *, force: bool = False) -> dict[st
 
         source_hash = sha256_file(path)
         previous = previous_by_path.get(relative)
+        from .ocr import decision_for_source
+
+        pending_ocr_decision = decision_for_source(project_dir, relative, source_hash)
         reusable = (
             not force
             and previous
             and previous.get("source_hash") == source_hash
             and previous.get("parser_version") == PARSER_VERSION
-            and previous.get("status") in {"parsed", "needs_ocr", "empty"}
+            and previous.get("status")
+            in {"parsed", "needs_ocr", "awaiting_ocr_action", "skipped_by_user", "empty"}
             and all(item in evidence_by_id for item in previous.get("evidence_ids", []))
+            and not (previous.get("status") == "needs_ocr" and pending_ocr_decision)
         )
         if reusable:
             source_evidence = [evidence_by_id[item] for item in previous["evidence_ids"]]
@@ -138,7 +143,7 @@ def ingest_project_sources(project_dir: Path, *, force: bool = False) -> dict[st
             reused_record["checked_at"] = checked_at
             records.append(reused_record)
             stats["reused"] += 1
-            if reused_record["status"] != "parsed":
+            if reused_record["status"] not in {"parsed", "skipped_by_user"}:
                 stats["blocked"] += 1
             continue
 
@@ -175,23 +180,36 @@ def ingest_project_sources(project_dir: Path, *, force: bool = False) -> dict[st
             for item in result.items
         ]
         evidence_records.extend(source_evidence)
-        records.append(
-            {
-                "source_file": relative,
-                "source_hash": source_hash,
-                "source_type": source_type,
-                "classification": classification,
-                "size_bytes": path.stat().st_size,
-                "parser_version": PARSER_VERSION,
-                "status": result.status,
-                "evidence_ids": [item["evidence_id"] for item in source_evidence],
-                "parsed_at": checked_at,
-                "checked_at": checked_at,
-                "message": result.message,
-            }
-        )
+        status = result.status
+        message = result.message
+        ocr_decision = None
+        if result.status == "needs_ocr":
+            ocr_decision = pending_ocr_decision
+            if ocr_decision and ocr_decision["decision"] == "skip_as_gap":
+                status = "skipped_by_user"
+                message = "User classified this noncritical scanned PDF as an explicit evidence gap"
+            elif ocr_decision and ocr_decision["decision"] != "pause":
+                status = "awaiting_ocr_action"
+                message = f"User selected OCR fallback: {ocr_decision['decision']}"
+        record = {
+            "source_file": relative,
+            "source_hash": source_hash,
+            "source_type": source_type,
+            "classification": classification,
+            "size_bytes": path.stat().st_size,
+            "parser_version": PARSER_VERSION,
+            "status": status,
+            "evidence_ids": [item["evidence_id"] for item in source_evidence],
+            "parsed_at": checked_at,
+            "checked_at": checked_at,
+            "message": message,
+        }
+        if ocr_decision:
+            record["ocr_decision"] = ocr_decision["decision"]
+            record["ocr_decided_by"] = ocr_decision["decided_by"]
+        records.append(record)
         stats["parsed"] += 1
-        if result.status != "parsed":
+        if status not in {"parsed", "skipped_by_user"}:
             stats["blocked"] += 1
 
     records.sort(key=lambda item: item["source_file"])
@@ -263,6 +281,8 @@ def validate_source_manifest(path: Path) -> list[str]:
         if record.get("status") not in {
             "parsed",
             "needs_ocr",
+            "awaiting_ocr_action",
+            "skipped_by_user",
             "empty",
             "unsupported",
             "source_too_large",
@@ -479,6 +499,20 @@ def _validate_locator(evidence: Evidence, prefix: str) -> list[str]:
             r"[A-Z]+[1-9]\d*(?::[A-Z]+[1-9]\d*)?", cell_range
         ):
             errors.append(f"{prefix}.locator.range: A1 cell or range required")
+        formulas = locator.get("formulas")
+        if formulas is not None and (
+            not isinstance(formulas, dict)
+            or not all(
+                isinstance(cell, str)
+                and re.fullmatch(r"[A-Z]+[1-9]\d*", cell)
+                and isinstance(formula, str)
+                and bool(formula.strip())
+                for cell, formula in formulas.items()
+            )
+        ):
+            errors.append(f"{prefix}.locator.formulas: A1-to-formula mapping required")
+        if formulas is not None and locator.get("formula_status") != "not_recalculated":
+            errors.append(f"{prefix}.locator.formula_status: must be not_recalculated")
     return errors
 
 

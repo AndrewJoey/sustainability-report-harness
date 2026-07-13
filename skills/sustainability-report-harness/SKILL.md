@@ -1,6 +1,6 @@
 ---
 name: sustainability-report-harness
-description: Create, validate, inspect, and resume local multi-standard sustainability or climate disclosure report projects with persistent Checkpoints and a traceable disclosure ledger. Use when Codex must start or continue an ESG reporting project, confirm project data boundaries and specifications, validate project.yaml or disclosure_ledger.jsonl, enforce human review gates, or prepare later evidence, mapping, drafting, assessment, adaptation, and export work without inventing regulatory content.
+description: Create, validate, inspect, resume, draft, assess, and export local multi-standard sustainability or climate disclosure report projects with persistent Checkpoints and a traceable disclosure ledger. Use when Codex must start or continue an ESG reporting project, confirm project data boundaries and specifications, ingest evidence, build and review a requirement union or formal outline, generate an Anchor and master draft, export internal Word/Excel review files, or enforce clean-export gates without inventing regulatory content.
 ---
 
 # Sustainability Report Harness
@@ -23,8 +23,15 @@ Resolve paths relative to this `SKILL.md`. Use scripts in `scripts/`:
 - `scaffold_project.py`: create a project without overwriting existing content.
 - `standards.py`: recommend and immutably lock user-confirmed standard packages.
 - `ingest_sources.py`: parse local DOCX, text PDF, and XLSX files into reusable evidence.
+- `review_ocr.py`: persist the user's decision for every scanned-PDF fallback without silently
+  invoking an external service.
 - `build_requirement_union.py`: validate a mapping plan and build the complete ledger union.
 - `review_requirement_union.py`: persist human decisions for mappings, evidence, conflicts, and gaps.
+- `build_outline.py` / `review_outline.py`: build and approve the formal, complete outline and its
+  selected Anchor section.
+- `build_draft.py` / `review_draft.py`: write Anchor/master proposals into the ledger and persist
+  item-level human decisions.
+- `export_project.py`: generate the internal DOCX/XLSX review package or a gate-approved clean DOCX.
 - `validate_project.py`: validate directories, configuration, workflow, and ledger.
 - `workflow.py`: read state, update Checkpoints, and perform allowed transitions.
 - `validate_ledger.py`: validate models, stable IDs, and references.
@@ -69,6 +76,11 @@ Reuse unchanged files by SHA-256 and parser version. Write source status to
 when the user explicitly wants a supported source reparsed. Treat `needs_ocr`, parse errors, and an
 empty supported-source set as blockers; do not claim that image-only PDFs were parsed.
 
+For `needs_ocr`, inspect available local tools and present the supported choices. Read
+[EVIDENCE-PROTOCOL.md](references/EVIDENCE-PROTOCOL.md), then record only the user's choice with
+`review_ocr.py`. Never infer permission to use cloud OCR. Only an explicitly noncritical source may
+be skipped as a gap.
+
 ### Build and review the requirement union
 
 Read [MAPPING-PROTOCOL.md](references/MAPPING-PROTOCOL.md). Create a mapping plan from the locked
@@ -79,6 +91,17 @@ the Evidence Checkpoint.
 Use `review_requirement_union.py` only to record decisions the user actually made. Require a named
 reviewer for mappings, evidence relationships, contradicting evidence, and uncovered requirements.
 Run `finalize` only after every item is accepted or edited and every gap has confirmed criticality.
+
+### Build, review, and export M4 artifacts
+
+Read [OUTLINE-FORMAT.md](references/OUTLINE-FORMAT.md). Validate an Agent-created outline proposal
+with `build_outline.py` and stop for `review_outline.py`. After approval, generate only the selected
+Anchor using `build_draft.py`; record every content and assessment decision with `review_draft.py`
+and finalize the Anchor before creating the remaining master sections.
+
+After master review, read [EXPORT-PROTOCOL.md](references/EXPORT-PROTOCOL.md) and run
+`export_project.py <project-dir> internal`. Treat Word and Excel as derived review files. Run clean
+export only after master/export approval and a passing preflight.
 
 ### Resume
 
@@ -95,11 +118,11 @@ Run `python scripts/workflow.py <project-dir> status`, inspect `project.yaml`, a
 7. Generate and review the complete master draft.
 8. Adapt from the master and pass export preflight.
 
-M3 implements the M2 foundation plus standard-package integrity, version recommendation and lock,
-source-clause completeness, requirement decomposition contracts, the multi-standard union,
-evidence relationships, gap tracking, and persistent human review. Treat OCR, drafting,
-assessment, adaptation, and business-file export as later-phase capabilities. Treat semantic
-mappings as draft until a qualified reviewer approves them.
+M4 implements the M3 foundation plus scanned-PDF decision persistence, formal outline coverage,
+Anchor-first drafting, complete master drafting, requirement and independent peer assessment,
+internal Word/Excel review files, export manifests, and clean-export gates. It does not execute OCR
+engines, supply official standards, or create standard-specific adaptations. Treat every semantic
+mapping, drafted block, and assessment as a proposal until a qualified reviewer approves it.
 
 ## Load stage references only when needed
 
@@ -109,6 +132,7 @@ mappings as draft until a qualified reviewer approves them.
 - Formal outline work: read [OUTLINE-FORMAT.md](references/OUTLINE-FORMAT.md).
 - Anchor or master drafting: read [DRAFTING-PROTOCOL.md](references/DRAFTING-PROTOCOL.md).
 - Response assessment: read [ASSESSMENT-PROTOCOL.md](references/ASSESSMENT-PROTOCOL.md).
+- Internal or clean export: read [EXPORT-PROTOCOL.md](references/EXPORT-PROTOCOL.md).
 - Standard adaptation: read [ADAPTATION-PROTOCOL.md](references/ADAPTATION-PROTOCOL.md).
 - Any gate or final validation: read [QA-CHECKLISTS.md](references/QA-CHECKLISTS.md).
 

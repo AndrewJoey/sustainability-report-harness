@@ -12,6 +12,7 @@ from .models import (
     Evidence,
     EvidenceGap,
     EvidenceLink,
+    PeerAssessment,
     Requirement,
     RequirementMapping,
     UnifiedDisclosure,
@@ -39,6 +40,9 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
     mapping_ids: set[str] = set()
     link_ids: set[str] = set()
     gap_ids: set[str] = set()
+    content_ids_global: set[str] = set()
+    assessment_ids_global: set[str] = set()
+    peer_assessment_ids_global: set[str] = set()
     for index, record in enumerate(records):
         prefix = f"line {index + 1}"
         missing = REQUIRED_ENTRY_FIELDS - record.keys()
@@ -70,6 +74,12 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
         content = _models(DisclosureContent, record.get("content"), f"{prefix}.content", errors)
         assessments = _models(
             Assessment, record.get("assessments"), f"{prefix}.assessments", errors
+        )
+        peer_assessments = _models(
+            PeerAssessment,
+            record.get("peer_assessments", []),
+            f"{prefix}.peer_assessments",
+            errors,
         )
 
         if unified is None:
@@ -117,6 +127,7 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
             if gap.requirement_id not in requirement_ids:
                 errors.append(f"{prefix}.gaps.{gap.gap_id}: unknown requirement_id")
         for item in content:
+            _global_id(item.content_id, content_ids_global, "content_id", prefix, errors)
             if unified.unified_id not in item.unified_ids:
                 errors.append(
                     f"{prefix}.content.{item.content_id}: does not reference {unified.unified_id}"
@@ -128,6 +139,7 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
                 errors,
             )
         for item in assessments:
+            _global_id(item.assessment_id, assessment_ids_global, "assessment_id", prefix, errors)
             if item.requirement_id not in requirement_ids:
                 errors.append(f"{prefix}.assessments.{item.assessment_id}: unknown requirement_id")
             _missing_refs(
@@ -142,6 +154,32 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
                 f"{prefix}.assessments.{item.assessment_id}.evidence_ids",
                 errors,
             )
+        evidence_by_id = {item.evidence_id: item for item in evidence}
+        for item in peer_assessments:
+            _global_id(
+                item.peer_assessment_id,
+                peer_assessment_ids_global,
+                "peer_assessment_id",
+                prefix,
+                errors,
+            )
+            if item.requirement_id not in requirement_ids:
+                errors.append(
+                    f"{prefix}.peer_assessments.{item.peer_assessment_id}: unknown requirement_id"
+                )
+            _missing_refs(
+                item.evidence_ids,
+                evidence_ids,
+                f"{prefix}.peer_assessments.{item.peer_assessment_id}.evidence_ids",
+                errors,
+            )
+            for evidence_id in item.evidence_ids:
+                peer_evidence = evidence_by_id.get(evidence_id)
+                if peer_evidence and peer_evidence.classification != "peer_reference":
+                    errors.append(
+                        f"{prefix}.peer_assessments.{item.peer_assessment_id}: "
+                        "peer comparison requires peer_reference evidence"
+                    )
     return errors
 
 

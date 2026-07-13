@@ -37,7 +37,7 @@ def write_docx(path: Path, *, body_text: str = "2025 energy use was 42 MWh") -> 
         package.writestr("word/document.xml", document)
 
 
-def write_xlsx(path: Path, *, empty: bool = False) -> None:
+def write_xlsx(path: Path, *, empty: bool = False, with_formula: bool = False) -> None:
     workbook = """<?xml version="1.0" encoding="UTF-8"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
   <sheets><sheet name="Metrics" sheetId="1" r:id="rId1"/></sheets>
@@ -46,12 +46,13 @@ def write_xlsx(path: Path, *, empty: bool = False) -> None:
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
 </Relationships>"""
+    formula_cell = "<f>B2*2</f><v>4050</v>" if with_formula else "<v>12.5</v>"
     rows = (
         ""
         if empty
-        else """
+        else f"""
     <row r="1"><c r="A1" t="inlineStr"><is><t>Metric</t></is></c><c r="B1" t="inlineStr"><is><t>Year</t></is></c><c r="C1" t="inlineStr"><is><t>Value</t></is></c></row>
-    <row r="2"><c r="A2" t="inlineStr"><is><t>Emissions</t></is></c><c r="B2"><v>2025</v></c><c r="C2"><v>12.5</v></c></row>"""
+    <row r="2"><c r="A2" t="inlineStr"><is><t>Emissions</t></is></c><c r="B2"><v>2025</v></c><c r="C2">{formula_cell}</c></row>"""
     )
     worksheet = f"""<?xml version="1.0" encoding="UTF-8"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">

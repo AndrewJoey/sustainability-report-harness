@@ -5,6 +5,7 @@ from pathlib import Path
 from fixture_builders import write_docx, write_pdf, write_xlsx
 from report_harness.ingestion import ingest_project_sources
 from report_harness.io import read_jsonl, write_jsonl
+from report_harness.ocr import record_ocr_decision
 from report_harness.project import (
     default_project_config,
     scaffold_project,
@@ -120,6 +121,46 @@ def test_scanned_pdf_blocks_stage_and_is_reused_without_false_parse_claim(tmp_pa
     assert manifest[0]["evidence_ids"] == []
     assert workflow["workflow_state"] == "ingesting_sources"
     assert workflow["checkpoints"]["evidence"]["status"] == "blocked"
+
+
+def test_user_can_persist_noncritical_ocr_skip_and_continue(tmp_path: Path):
+    project = create_ingestion_project(tmp_path)
+    write_pdf(project / "sources/client/scan.pdf", text=None)
+    ingest_project_sources(project)
+
+    decision = record_ocr_decision(
+        project,
+        "sources/client/scan.pdf",
+        "skip_as_gap",
+        decided_by="consultant",
+        criticality="noncritical",
+        notes="Ancillary source; retain as an explicit evidence gap.",
+    )
+    result = ingest_project_sources(project)
+
+    assert decision["decision"] == "skip_as_gap"
+    assert result["valid"] is True
+    assert read_jsonl(project / "state/source_manifest.jsonl")[0]["status"] == "skipped_by_user"
+
+
+def test_selected_ocr_tool_remains_blocked_until_ocr_output_exists(tmp_path: Path):
+    project = create_ingestion_project(tmp_path)
+    write_pdf(project / "sources/client/scan.pdf", text=None)
+    ingest_project_sources(project)
+
+    record_ocr_decision(
+        project,
+        "sources/client/scan.pdf",
+        "run_local_ocr",
+        decided_by="consultant",
+        criticality="critical",
+    )
+    result = ingest_project_sources(project)
+
+    assert result["valid"] is False
+    assert read_jsonl(project / "state/source_manifest.jsonl")[0]["status"] == (
+        "awaiting_ocr_action"
+    )
 
 
 def test_ingestion_does_not_advance_an_empty_project(tmp_path: Path):

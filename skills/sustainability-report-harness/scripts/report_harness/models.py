@@ -322,13 +322,14 @@ class Assessment(SerializableModel):
     evidence_ids: list[str] = field(default_factory=list)
     missing_information: str | None = None
     improvement_suggestion: str | None = None
+    human_notes: str | None = None
 
     RESPONSE_STATUSES: ClassVar[set[str]] = {
         "fully_addressed",
         "partially_addressed",
         "not_addressed",
         "not_applicable",
-        "pending_confirmation",
+        "needs_confirmation",
     }
     CONFIDENCE_LEVELS: ClassVar[set[str]] = {"high", "medium", "low"}
     REVIEW_STATUSES: ClassVar[set[str]] = {"unreviewed", "accepted", "rejected", "edited"}
@@ -346,6 +347,49 @@ class Assessment(SerializableModel):
         _require_enum(self.response_status, self.RESPONSE_STATUSES, "response_status")
         _require_enum(self.confidence, self.CONFIDENCE_LEVELS, "confidence")
         _require_enum(self.review_status, self.REVIEW_STATUSES, "review_status")
+        if self.response_status == "not_applicable" and self.review_status in {
+            "accepted",
+            "edited",
+        }:
+            require(
+                isinstance(self.human_notes, str) and bool(self.human_notes.strip()),
+                "HUMAN_REASON_REQUIRED",
+                "Accepted not_applicable assessments require human_notes",
+                "human_notes",
+            )
+
+
+@dataclass(slots=True)
+class PeerAssessment(SerializableModel):
+    peer_assessment_id: str
+    requirement_id: str
+    peer_position: str
+    rationale: str
+    review_status: str
+    evidence_ids: list[str] = field(default_factory=list)
+    reviewed_by: str | None = None
+    human_notes: str | None = None
+
+    PEER_POSITIONS: ClassVar[set[str]] = {
+        "leading",
+        "comparable",
+        "lagging",
+        "not_assessed",
+    }
+    REVIEW_STATUSES: ClassVar[set[str]] = {"unreviewed", "accepted", "rejected", "edited"}
+
+    def validate(self) -> None:
+        _require_nonempty(self, "peer_assessment_id", "requirement_id", "rationale")
+        _require_unique(self.evidence_ids, "evidence_ids")
+        _require_enum(self.peer_position, self.PEER_POSITIONS, "peer_position")
+        _require_enum(self.review_status, self.REVIEW_STATUSES, "review_status")
+        if self.review_status != "unreviewed":
+            require(
+                isinstance(self.reviewed_by, str) and bool(self.reviewed_by.strip()),
+                "REVIEWER_REQUIRED",
+                "reviewed_by is required after review",
+                "reviewed_by",
+            )
 
 
 def _require_nonempty(model: object, *fields: str) -> None:

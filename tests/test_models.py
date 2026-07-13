@@ -116,3 +116,17 @@ def test_model_rejects_invalid_enum():
     )
     with pytest.raises(HarnessError, match="INVALID_ENUM"):
         model.validate()
+
+
+def test_assessment_uses_prd_needs_confirmation_status():
+    model = Assessment(
+        assessment_id="SIM-ASMT-002",
+        requirement_id="SIM-REQ-001",
+        response_status="needs_confirmation",
+        rationale="模拟证据冲突。",
+        confidence="low",
+        confidence_reason="两份材料存在差异。",
+        review_status="unreviewed",
+    )
+
+    model.validate()

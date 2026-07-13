@@ -62,7 +62,7 @@ def validate_project_config(config: dict[str, Any]) -> list[str]:
 
     _enum(config, "report_type", REPORT_TYPES, errors)
     if config.get("primary_language") != "zh-CN":
-        errors.append("primary_language: M1 requires zh-CN")
+        errors.append("primary_language: the MVP requires zh-CN")
     _enum(config, "granularity", GRANULARITIES, errors)
     _enum(config, "gap_handling", GAP_HANDLING, errors)
     _enum(config, "peer_reference_mode", PEER_MODES, errors)

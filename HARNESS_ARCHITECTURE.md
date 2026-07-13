@@ -43,6 +43,7 @@ report-agent/
 │       │   ├── DRAFTING-PROTOCOL.md
 │       │   ├── ASSESSMENT-PROTOCOL.md
 │       │   ├── ADAPTATION-PROTOCOL.md
+│       │   ├── EXPORT-PROTOCOL.md
 │       │   └── QA-CHECKLISTS.md
 │       ├── scripts/
 │       │   ├── scaffold_project.py
@@ -50,6 +51,12 @@ report-agent/
 │       │   ├── ingest_sources.py
 │       │   ├── build_requirement_union.py
 │       │   ├── review_requirement_union.py
+│       │   ├── review_ocr.py
+│       │   ├── build_outline.py
+│       │   ├── review_outline.py
+│       │   ├── build_draft.py
+│       │   ├── review_draft.py
+│       │   ├── export_project.py
 │       │   ├── validate_project.py
 │       │   ├── validate_ledger.py
 │       │   └── preflight_export.py
@@ -75,9 +82,11 @@ client-project/
 │   ├── workflow.json
 │   ├── standards.lock.json           # 锁定准则后生成
 │   ├── source_manifest.jsonl
+│   ├── ocr_decisions.jsonl          # 用户选择的扫描 PDF 兜底方案
 │   ├── evidence.jsonl
 │   ├── requirement_union.json        # 构建并集后生成
 │   ├── disclosure_ledger.jsonl    # 唯一真相源
+│   ├── outline.json
 │   └── outline.md
 ├── drafts/
 │   ├── master/
@@ -112,12 +121,14 @@ client-project/
 - 解析材料并生成证据库；
 - M2 以项目相对路径、SHA-256 和解析器版本管理增量复用；Word 保留段落/表格位置，文本型 PDF 保留页/文本块位置，Excel 保留工作表/单元格范围；
 - 扫描版或无可提取文本的 PDF 标记为 `needs_ocr`，不得生成伪证据或推进状态；
+- OCR Skill 只发现本地或授权选项并记录用户决定；核心不静默执行 OCR 或云上传；
 - 构建统一披露要求和 `disclosure_ledger.jsonl`；
 - M3 将已确认准则包完整复制到 `standards.lock.json`，以原始条款清单证明拆解无静默丢失，并以内容哈希防止规则漂移；
 - 每条可检查要求必须且只能进入一个统一披露要求；映射类型、差异、证据关系、矛盾证据和缺口写入账本；
 - Agent 新映射默认 `unreviewed`，确定性脚本不得替顾问接受语义判断；
 - **Checkpoint Evidence**：确认关键缺口、未经审核映射和冲突证据。
 - 基于已确认准则并集和证据覆盖生成正式 `outline.md`；
+- M4 同时生成机器可校验的 `outline.json`，确保每个统一披露要求恰好出现一次，并明确唯一 Anchor；
 - **Checkpoint Outline**：确认章节、篇幅、颗粒度、准则覆盖和预计缺口。
 
 ### Phase 3：首章 Anchor
@@ -132,12 +143,14 @@ client-project/
 
 - 按已确认 Anchor 生成剩余章节；
 - 每章完成后校验账本、覆盖和内容状态；
+- M4 将 Agent proposal 写入账本，所有正文和双轨评价默认 `unreviewed`，接受或人工编辑后才可通过 Checkpoint；
 - **Checkpoint Master**：顾问审阅完整母版、回应矩阵和缺口。
 
 ### Phase 5：适配与导出
 
 - 按目标准则从母版派生适配稿；
 - 执行 Word、Excel 和账本一致性检查；
+- 内部 DOCX/XLSX 和干净版均由当前账本派生，`export_manifest.json` 绑定账本与文件哈希；
 - **Checkpoint Export**：处理未确认内容后生成干净版。
 
 ## 6. 强制质量协议
@@ -158,7 +171,9 @@ client-project/
 
 Agent 必须在开始时说明模式，不得静默切换。
 
-## 8. M1 最小交付
+## 8. 分阶段工程交付
+
+### M1 最小交付
 
 - 可安装的 Skill 目录、`SKILL.md` 和 `manifest.json`；
 - 项目脚手架和固定目录；
@@ -168,6 +183,13 @@ Agent 必须在开始时说明模式，不得静默切换。
 - 模拟准则、示例项目和自动化测试；
 - 单一 Agent 可走通 Phase 0 至 Phase 1，并验证状态持久化；
 - Skill 包可复制到 Codex 扫描目录，同时保留跨 Agent 兼容格式。
+
+### M4 增量交付
+
+- OCR 方案 Human-in-the-loop 决策记录；
+- 正式目录、Anchor-first 母版和逐项人工审阅；
+- 准则回应与同行最佳实践独立评价；
+- 内部 DOCX/XLSX、导出清单和干净版门禁。
 
 ## 9. 明确不借鉴
 

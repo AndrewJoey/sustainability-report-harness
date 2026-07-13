@@ -2,7 +2,7 @@
 
 这是一个面向可持续发展、ESG 和气候披露咨询团队的本地 AI 能力包。它用于复用客户证据、统一映射多套披露准则，并从同一份披露母版派生不同准则的报告粗稿。
 
-> 当前状态：M3 多准则并集已经完成。项目可以锁定准则版本、验证原始条款拆解、构建统一披露要求并持久化人工审核；报告目录和正文生成将在 M4–M5 实现。
+> 当前状态：M4 工程实现已完成。项目可以生成并审核正式目录、Anchor 和完整母版，导出内部 Word/Excel 审阅包，并在未确认内容存在时阻止干净版；真实专业验收仍待正式准则和脱敏样例。
 
 ## 产品会帮助你完成什么
 
@@ -21,7 +21,7 @@
 
 ## 当前可以做什么
 
-当前 M3 Harness 可以：
+当前 M4 Harness 可以：
 
 - 创建符合 PRD 公共目录契约的本地项目；
 - 校验 `project.yaml`、工作流和 `disclosure_ledger.jsonl`；
@@ -38,6 +38,12 @@
 - 将相同、相近和特有要求组成完整并集，阻止任何原始要求静默丢失；
 - 记录 `direct`、`supporting`、`contradicting` 三类证据关系和明确缺口；
 - 在映射、冲突证据和缺口未经用户确认时阻止进入报告目录阶段。
+- 为扫描版 PDF 持久化用户选择的 OCR、补件或人工录入方案，不静默调用外部服务；
+- 生成覆盖全部统一披露要求的正式目录，并明确选定 Anchor；
+- 先生成和审核 Anchor，再生成完整母版，保留人工编辑；
+- 分开记录准则回应评价和同行/最佳实践评价；
+- 导出内部审阅 DOCX、回应矩阵、缺口清单、证据清单和独立同行评价表；
+- 通过账本哈希、文件哈希、Checkpoint 和内容状态阻止过期或不安全的干净版导出。
 
 产品和开发依据包括：
 
@@ -49,7 +55,7 @@
 
 ## 使用方式
 
-当前版本是一个可安装、可复制、可测试的本地 Agent Skill Harness。它已覆盖项目创建、证据解析、准则锁定和多准则要求并集，但不包含完整报告生成能力。
+当前版本是一个可安装、可复制、可测试的本地 Agent Skill Harness。它已覆盖从项目创建到可审阅母版和内部业务文件导出的 M1–M4 工程链路。
 
 ### 1. 安装 Harness
 
@@ -123,16 +129,18 @@ client-project/
 │   ├── workflow.json
 │   ├── standards.lock.json       # 锁定准则后生成
 │   ├── source_manifest.jsonl
+│   ├── ocr_decisions.jsonl
 │   ├── evidence.jsonl
 │   ├── requirement_union.json    # 构建并集后生成
 │   ├── disclosure_ledger.jsonl
+│   ├── outline.json
 │   └── outline.md
 ├── drafts/
-│   ├── master/
+│   ├── master/                   # Anchor 和完整母版的 JSON/Markdown 快照
 │   └── adaptations/
 ├── outputs/
-│   ├── internal/
-│   └── clean/
+│   ├── internal/                 # DOCX、XLSX 与 export_manifest.json
+│   └── clean/                    # 仅通过门禁后生成
 └── logs/
 ```
 
@@ -181,7 +189,15 @@ uv run python skills/sustainability-report-harness/scripts/ingest_sources.py \
   /absolute/path/to/client-project
 ```
 
-结果保存在 `state/source_manifest.jsonl` 和 `state/evidence.jsonl`。重复运行时，路径、哈希和解析器版本均未变化的文件不会重新解析。当前支持 `.docx`、文本型 `.pdf` 和 `.xlsx`；扫描版 PDF 会标记为需要 OCR，旧版 `.doc`、`.xls` 和加密 PDF 暂不支持。
+结果保存在 `state/source_manifest.jsonl` 和 `state/evidence.jsonl`。重复运行时，路径、哈希和解析器版本均未变化的文件不会重新解析。当前支持 `.docx`、文本型 `.pdf` 和 `.xlsx`；Excel 公式会保留但不会假装重新计算。扫描版 PDF 会标记为需要 OCR，旧版 `.doc`、`.xls` 和加密 PDF 暂不支持。
+
+扫描版 PDF 由用户选择本地 OCR、Agent 视觉、经授权的云 OCR、提供可搜索版本、人工录入、暂停，或在明确非关键时作为缺口跳过：
+
+```text
+uv run python skills/sustainability-report-harness/scripts/review_ocr.py decide \
+  /absolute/path/to/client-project sources/client/scanned.pdf run_local_ocr \
+  --criticality critical --decided-by "顾问姓名"
+```
 
 ### 7. 构建多准则要求并集
 
@@ -208,7 +224,47 @@ uv run python skills/sustainability-report-harness/scripts/review_requirement_un
 存在未审核或被拒绝的映射、证据关系、冲突证据或缺口时，系统拒绝进入正式目录生成。
 如果顾问要求重新分组或重做映射，可修正 mapping plan 后使用 `--replace`；未变化的人工决定会保留，变化项重新进入待审核状态。
 
-### 9. 通过人工确认节点
+### 9. 生成目录、Anchor 和母版
+
+Agent 先按照 `templates/outline-plan.json.template` 生成 proposal，再运行：
+
+```text
+uv run python skills/sustainability-report-harness/scripts/build_outline.py \
+  /absolute/path/to/client-project /absolute/path/to/outline-plan.json
+
+uv run python skills/sustainability-report-harness/scripts/review_outline.py \
+  /absolute/path/to/client-project approved --reviewed-by "顾问姓名"
+```
+
+正文 proposal 使用 `templates/draft-proposal.json.template`。`anchor` 只能覆盖已选 Anchor，获批后 `master` 才能覆盖其余章节：
+
+```text
+uv run python skills/sustainability-report-harness/scripts/build_draft.py \
+  /absolute/path/to/client-project /absolute/path/to/anchor-proposal.json anchor
+
+uv run python skills/sustainability-report-harness/scripts/review_draft.py finalize \
+  /absolute/path/to/client-project anchor --reviewed-by "顾问姓名"
+```
+
+每个内容块、准则评价和同行评价都要先通过 `review_draft.py item` 接受、拒绝或编辑，才能 finalize。
+
+### 10. 导出内部审阅包
+
+```text
+uv run python skills/sustainability-report-harness/scripts/export_project.py \
+  /absolute/path/to/client-project internal
+```
+
+内部输出包括 `master_report_internal.docx`、`response_matrix.xlsx`、`gap_list.xlsx`、`evidence_list.xlsx`、`peer_assessment.xlsx` 和带哈希的 `export_manifest.json`。账本变更后旧输出会被判定为过期。
+
+干净版还需要 Master 和 Export Checkpoint 获批，并通过预检：
+
+```text
+uv run python skills/sustainability-report-harness/scripts/export_project.py \
+  /absolute/path/to/client-project clean
+```
+
+### 11. 通过人工确认节点
 
 工作流包含不可绕过的确认节点：
 
@@ -233,9 +289,9 @@ uv run python skills/sustainability-report-harness/scripts/review_requirement_un
 - 推断、建议文本和信息缺口必须明确标记；
 - 人工编辑、已确认准则版本和数据授权不得被静默覆盖。
 
-## M3 的交付边界
+## M4 的交付边界
 
-M3 已交付：
+M4 在 M1–M3 基础上已交付：
 
 - 自包含的 `sustainability-report-harness` Skill 包；
 - 标准客户项目脚手架；
@@ -251,17 +307,22 @@ M3 已交付：
 - 五类跨准则映射、统一披露并集和逐要求完整性检查；
 - 证据多对多关系、矛盾证据、覆盖缺口和分准则覆盖摘要；
 - 映射、证据关系和缺口的 Human-in-the-loop 审核与跨 Agent 恢复。
+- 扫描 PDF 兜底选项发现、用户决策和源文件哈希绑定；
+- 正式目录完整覆盖、冲突显示、Anchor 选定和 Outline Checkpoint；
+- Anchor-first 与完整母版起草、逐项人工审核和人工编辑保护；
+- 准则回应与同行最佳实践双轨评价；
+- 内部 DOCX、四份 XLSX、导出清单及干净版阻断逻辑。
 
-M3 不会交付：
+M4 不会交付：
 
 - 正式监管准则知识库；
-- 扫描版 PDF OCR、旧版 `.doc`/`.xls` 和复杂嵌入对象解析；
+- 内置 OCR 引擎、旧版 `.doc`/`.xls` 和复杂嵌入对象解析；
 - 正式监管准则内容和未经专家审核即可使用的语义映射；
-- 完整母版、矩阵或适配稿生成；
-- 正式 Word、Excel 业务成品导出；
+- 未经顾问审核即可使用的正式报告成品；
+- 准则适配稿；
 - 第二个 Agent 适配层；
 - Web 界面、数据库服务或 SaaS。
 
 ## 项目进度
 
-M3 已通过自动化测试和 Skill 验证。当前里程碑及 M4–M5 的阻塞输入以 [PROJECT_PLAN.md](./PROJECT_PLAN.md) 为准。真实领域试用仍需要经过专业人员审核的正式准则拆解与映射、脱敏客户材料以及人工认可的期望输出；不得用模型猜测代替。
+M4 工程测试和 Skill 验证结果以 [PROJECT_PLAN.md](./PROJECT_PLAN.md) 为准。M4 的正式完成门槛仍包括一次顾问专业审阅；真实领域试用需要经过专业人员审核的准则拆解与映射、脱敏客户材料和人工认可的期望输出，不得用模型猜测代替。

@@ -8,5 +8,5 @@ Use this protocol only after the master Checkpoint is approved.
 - Do not create an unlinked copy of a customer fact.
 - Re-run ledger and export checks after adaptation.
 
-M1 reserves the directory and state transitions but does not produce DOCX or XLSX adaptations.
-
+M4 reserves the directory and state transitions but does not yet produce standard-specific DOCX or
+XLSX adaptations.

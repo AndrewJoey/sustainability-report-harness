@@ -25,8 +25,8 @@ Use this protocol when M2 evidence ingestion is available or when validating evi
 - Locate Word content by heading path plus paragraph or table-row index.
 - Locate PDF content by page and text-block index. Mark a file `needs_ocr` when no extractable text
   exists; do not emit evidence for it.
-- Locate Excel content by worksheet and cell range. Preserve explicit values without evaluating or
-  inventing formulas.
+- Locate Excel content by worksheet and cell range. Preserve explicit values and formula strings;
+  mark formulas `not_recalculated` rather than inventing calculated results.
 - Capture a period or unit only when exactly one explicit, deterministic token is present in an
   excerpt. Leave ambiguous metadata empty.
 - Remove stale evidence when a source changes or disappears. Preserve evidence IDs and `parsed_at`
@@ -35,7 +35,10 @@ Use this protocol when M2 evidence ingestion is available or when validating evi
   source cannot be safely parsed. Unsupported files remain visible in the manifest but do not
   masquerade as evidence.
 
-## Current boundary
+## Scanned-PDF decision gate
 
-M2 does not perform OCR, semantic evidence-to-requirement mapping, conflict resolution, or factual
-confirmation. Those decisions require later stages and human review.
+When a source is `needs_ocr`, inspect locally available OCR or vision options and present them to the
+user. Persist the decision with `review_ocr.py`; the decision recorder never executes a cloud upload
+or silently chooses an OCR engine. Cloud OCR requires project permission. `skip_as_gap` is allowed
+only when the user explicitly marks the source noncritical. Record decisions in
+`state/ocr_decisions.jsonl` bound to the source hash so changed files require a new decision.

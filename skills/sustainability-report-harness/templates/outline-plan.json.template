@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "anchor_section_id": "SEC-001",
+  "sections": [
+    {
+      "section_id": "SEC-001",
+      "title": "章节标题",
+      "objective": "说明本章目标，不在此处生成客户事实。",
+      "target_length_words": 1000,
+      "granularity": "standard",
+      "unified_ids": ["UNI-001"],
+      "tables": [],
+      "cases": [],
+      "chart_suggestions": []
+    }
+  ],
+  "conflicts": []
+}
