@@ -270,7 +270,11 @@ def finalize_draft(
         artifacts=[json_path.as_posix(), md_path.as_posix(), LEDGER_PATH.as_posix()],
         notes=notes,
     )
-    store.transition("generating_master" if stage == "anchor" else "awaiting_export_confirmation")
+    if stage == "anchor":
+        store.transition("generating_master")
+    else:
+        adaptations = load_project_config(project_dir)["deliverables"]["adaptations"]
+        store.transition("adapting_standard" if adaptations else "awaiting_export_confirmation")
     append_event(
         project_dir,
         project_id=str(load_project_config(project_dir)["project_id"]),

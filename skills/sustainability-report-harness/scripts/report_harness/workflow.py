@@ -72,7 +72,7 @@ TRANSITIONS: dict[str, set[str]] = {
     "generating_master": {"reviewing_master"},
     "reviewing_master": {"adapting_standard", "awaiting_export_confirmation"},
     "adapting_standard": {"awaiting_export_confirmation"},
-    "awaiting_export_confirmation": {"ready_for_export"},
+    "awaiting_export_confirmation": {"adapting_standard", "ready_for_export"},
     "ready_for_export": set(),
     "blocked": set(),
 }
@@ -86,6 +86,8 @@ TRANSITION_REQUIREMENTS = {
     ("awaiting_anchor_confirmation", "generating_master"): "anchor",
     ("reviewing_master", "adapting_standard"): "master",
     ("reviewing_master", "awaiting_export_confirmation"): "master",
+    ("awaiting_export_confirmation", "adapting_standard"): "master",
+    ("adapting_standard", "awaiting_export_confirmation"): "master",
     ("awaiting_export_confirmation", "ready_for_export"): "export",
 }
 

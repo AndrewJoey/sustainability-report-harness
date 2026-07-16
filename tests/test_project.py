@@ -56,3 +56,13 @@ def test_invalid_config_reports_all_actionable_paths():
     assert any(item.startswith("reporting_period_end:") for item in errors)
     assert any(item.startswith("data_policy.cloud_processing_allowed:") for item in errors)
     assert any(item.startswith("granularity:") for item in errors)
+
+
+def test_adaptation_deliverables_must_be_unique_selected_standards():
+    invalid = config()
+    invalid["deliverables"]["adaptations"] = ["missing-standard", "missing-standard"]
+
+    errors = validate_project_config(invalid)
+
+    assert "deliverables.adaptations: standard IDs must be unique" in errors
+    assert any("standard must be selected" in error for error in errors)

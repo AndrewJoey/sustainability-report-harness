@@ -8,6 +8,11 @@ import re
 from pathlib import Path
 from typing import Any
 
+from .adaptation import (
+    adaptation_preflight,
+    expected_adaptation_files,
+    write_adaptation_outputs,
+)
 from .audit import append_event
 from .config import load_project_config
 from .docx_export import write_master_docx
@@ -108,13 +113,16 @@ def export_project(project_dir: Path, *, mode: str) -> dict[str, Any]:
     _assert_complete_master(outline, ledger)
 
     if mode == "clean":
-        if not config["deliverables"]["master_report"]:
+        has_master = config["deliverables"]["master_report"]
+        has_adaptations = bool(config["deliverables"]["adaptations"])
+        if not has_master and not has_adaptations:
             raise HarnessError(
                 "DELIVERABLE_DISABLED",
-                "Clean master report export is disabled in project.yaml",
-                "deliverables.master_report",
+                "No clean report deliverable is enabled in project.yaml",
+                "deliverables",
             )
-        blockers = preflight_clean_export(ledger)
+        blockers: list[Any] = preflight_clean_export(ledger) if has_master else []
+        blockers.extend(adaptation_preflight(project_dir, ledger))
         if workflow["checkpoints"]["master"]["status"] != "approved":
             blockers.append({"reason": "master Checkpoint is not approved"})
         if workflow["checkpoints"]["export"]["status"] != "approved":
@@ -127,18 +135,33 @@ def export_project(project_dir: Path, *, mode: str) -> dict[str, Any]:
             )
         output_dir = project_dir / "outputs/clean"
         output_dir.mkdir(parents=True, exist_ok=True)
-        report = output_dir / "master_report_clean.docx"
-        write_master_docx(
-            report,
-            config=config,
-            outline=outline,
-            ledger=ledger,
-            internal=False,
+        files: list[Path] = []
+        if has_master:
+            report = output_dir / "master_report_clean.docx"
+            write_master_docx(
+                report,
+                config=config,
+                outline=outline,
+                ledger=ledger,
+                internal=False,
+            )
+            files.append(report)
+        else:
+            stale_master = output_dir / "master_report_clean.docx"
+            if stale_master.is_file():
+                stale_master.unlink()
+        files.extend(
+            write_adaptation_outputs(
+                project_dir,
+                output_dir,
+                mode="clean",
+                ledger=ledger,
+            )
         )
-        files = [report]
     else:
         if workflow["workflow_state"] not in {
             "reviewing_master",
+            "adapting_standard",
             "awaiting_export_confirmation",
             "ready_for_export",
         }:
@@ -190,7 +213,11 @@ def approve_export(
     ledger_errors = validate_ledger(ledger)
     outline = read_json(project_dir / OUTLINE_JSON)
     outline_errors = validate_outline(outline, ledger)
-    blockers: list[Any] = [*ledger_errors, *outline_errors, *preflight_clean_export(ledger)]
+    config = load_project_config(project_dir)
+    blockers: list[Any] = [*ledger_errors, *outline_errors]
+    if config["deliverables"]["master_report"]:
+        blockers.extend(preflight_clean_export(ledger))
+    blockers.extend(adaptation_preflight(project_dir, ledger))
     if workflow["checkpoints"]["master"]["status"] != "approved":
         blockers.append("master Checkpoint is not approved")
     manifest_path = project_dir / "outputs/internal/export_manifest.json"
@@ -349,6 +376,14 @@ def _write_internal_outputs(
         rows=peer_rows,
     )
     files.append(peer)
+    files.extend(
+        write_adaptation_outputs(
+            project_dir,
+            output_dir,
+            mode="internal",
+            ledger=ledger,
+        )
+    )
     return files
 
 
@@ -570,18 +605,21 @@ def _source_hashes(project_dir: Path) -> dict[str, str]:
 def _expected_export_files(project_dir: Path, mode: str) -> set[str]:
     config = load_project_config(project_dir)
     if mode == "clean":
-        return (
+        files = (
             {"outputs/clean/master_report_clean.docx"}
             if config["deliverables"]["master_report"]
             else set()
         )
+        return files | expected_adaptation_files(project_dir, mode)
     enabled = {
         key
         for key in ("master_report", "response_matrix", "gap_list", "evidence_list")
         if config["deliverables"][key]
     }
     enabled.add("peer_assessment")
-    return {f"outputs/internal/{INTERNAL_FILES[key]}" for key in enabled}
+    return {
+        f"outputs/internal/{INTERNAL_FILES[key]}" for key in enabled
+    } | expected_adaptation_files(project_dir, mode)
 
 
 def _json_hash(value: Any) -> str:

@@ -31,6 +31,8 @@ Resolve paths relative to this `SKILL.md`. Use scripts in `scripts/`:
   selected Anchor section.
 - `build_draft.py` / `review_draft.py`: write Anchor/master proposals into the ledger and persist
   item-level human decisions.
+- `build_adaptation.py` / `review_adaptation.py`: derive a locked-standard version from master
+  content IDs and persist item-level human decisions.
 - `export_project.py`: generate the internal DOCX/XLSX review package or a gate-approved clean DOCX.
 - `review_export.py`: validate the current internal package and approve the Export Checkpoint.
 - `validate_project.py`: validate directories, configuration, workflow, and ledger.
@@ -93,12 +95,17 @@ Use `review_requirement_union.py` only to record decisions the user actually mad
 reviewer for mappings, evidence relationships, contradicting evidence, and uncovered requirements.
 Run `finalize` only after every item is accepted or edited and every gap has confirmed criticality.
 
-### Build, review, and export M4 artifacts
+### Build, review, adapt, and export report artifacts
 
 Read [OUTLINE-FORMAT.md](references/OUTLINE-FORMAT.md). Validate an Agent-created outline proposal
 with `build_outline.py` and stop for `review_outline.py`. After approval, generate only the selected
 Anchor using `build_draft.py`; record every content and assessment decision with `review_draft.py`
 and finalize the Anchor before creating the remaining master sections.
+
+After Master approval, read [ADAPTATION-PROTOCOL.md](references/ADAPTATION-PROTOCOL.md) for every
+standard listed in `deliverables.adaptations`. Build a complete proposal with
+`build_adaptation.py`, export the internal DOCX/XLSX for review, record every action through
+`review_adaptation.py`, and finalize all configured targets.
 
 After master review, read [EXPORT-PROTOCOL.md](references/EXPORT-PROTOCOL.md) and run
 `export_project.py <project-dir> internal`. Treat Word and Excel as derived review files. Run clean
@@ -119,11 +126,11 @@ Run `python scripts/workflow.py <project-dir> status`, inspect `project.yaml`, a
 7. Generate and review the complete master draft.
 8. Adapt from the master and pass export preflight.
 
-M4 implements the M3 foundation plus scanned-PDF decision persistence, formal outline coverage,
-Anchor-first drafting, complete master drafting, requirement and independent peer assessment,
-internal Word/Excel review files, export manifests, and clean-export gates. It does not execute OCR
-engines, supply official standards, or create standard-specific adaptations. Treat every semantic
-mapping, drafted block, and assessment as a proposal until a qualified reviewer approves it.
+M5.1 implements the M4 foundation plus ledger-linked standard adaptations, difference workbooks,
+and internal/clean adaptation DOCX export. It does not execute OCR engines, supply official
+standards, provide the second Agent adapter, or produce trial metrics. Treat every semantic mapping,
+drafted block, assessment, and adaptation action as a proposal until a qualified reviewer approves
+it.
 
 ## Load stage references only when needed
 

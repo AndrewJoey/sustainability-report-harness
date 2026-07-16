@@ -65,11 +65,14 @@
         "response_matrix": {"type": "boolean"},
         "gap_list": {"type": "boolean"},
         "evidence_list": {"type": "boolean"},
-        "adaptations": {"type": "array", "items": {"type": "string"}}
+        "adaptations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"}
+        }
       },
       "additionalProperties": false
     }
   },
   "additionalProperties": true
 }
-

@@ -23,6 +23,7 @@
     "content": {"type": "array"},
     "assessments": {"type": "array"},
     "peer_assessments": {"type": "array"},
+    "adaptations": {"type": "array"},
     "review_status": {"enum": ["unreviewed", "accepted", "rejected", "edited"]}
   },
   "additionalProperties": false

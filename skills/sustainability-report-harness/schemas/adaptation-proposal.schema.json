@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Standard adaptation proposal",
+  "type": "object",
+  "required": ["schema_version", "target_standard_id", "items"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "target_standard_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"},
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "adaptation_id",
+          "source_content_id",
+          "action",
+          "reason",
+          "target_section_id",
+          "adapted_text",
+          "supplemental_evidence_ids",
+          "content_type",
+          "review_status",
+          "reviewed_by",
+          "human_notes"
+        ],
+        "properties": {
+          "adaptation_id": {"type": "string", "minLength": 1},
+          "source_content_id": {"type": "string", "minLength": 1},
+          "action": {"enum": ["keep", "condense", "reorganize", "supplement", "omit"]},
+          "reason": {"type": "string", "minLength": 1},
+          "target_section_id": {"type": ["string", "null"]},
+          "adapted_text": {"type": ["string", "null"]},
+          "supplemental_evidence_ids": {"type": "array", "items": {"type": "string"}},
+          "content_type": {"enum": ["confirmed_fact", "inference", "suggested_text", "information_gap"]},
+          "review_status": {"const": "unreviewed"},
+          "reviewed_by": {"type": "null"},
+          "human_notes": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

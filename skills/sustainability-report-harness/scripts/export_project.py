@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export M4 internal review files or a gate-approved clean master report."""
+"""Export internal review files or gate-approved clean master/adaptation reports."""
 
 from __future__ import annotations
 

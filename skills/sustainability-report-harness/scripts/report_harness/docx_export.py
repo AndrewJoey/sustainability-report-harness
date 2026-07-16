@@ -272,7 +272,7 @@ def _core_properties(config: dict[str, Any]) -> str:
 
 def _app_properties() -> str:
     return """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Sustainability Report Harness</Application><AppVersion>0.4</AppVersion></Properties>"""
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Sustainability Report Harness</Application><AppVersion>0.5</AppVersion></Properties>"""
 
 
 def _sanitize_xml(value: str) -> str:

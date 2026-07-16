@@ -11,6 +11,8 @@ standards, evidence index, and `state/disclosure_ledger.jsonl`:
 - `response_matrix.xlsx` with the fixed PRD field order;
 - `gap_list.xlsx` and `evidence_list.xlsx`;
 - `peer_assessment.xlsx` as a separate internal best-practice track;
+- `adapted_<standard_id>_internal.docx` and `adaptation_diff_<standard_id>.xlsx` for every
+  configured target standard;
 - `export_manifest.json` with the ledger hash and every output hash.
 
 Do not edit exported files to create new business judgments. Update the ledger and regenerate them.
@@ -20,6 +22,6 @@ Do not edit exported files to create new business judgments. Update the ledger a
 Run `review_export.py` after generating the internal package. It approves the Export Checkpoint only
 when the manifest matches the current ledger, outline, project configuration, standards lock, and
 files, and preflight reports no unreviewed content, inference, suggested text, information gap,
-rejected item, or stale output. The clean
-DOCX omits internal markers, comments, and information-gap content. Any ledger change makes an older
+rejected item, unreviewed adaptation action, or stale output. Clean master and adaptation DOCX files
+omit internal markers, comments, and information-gap content. Any ledger change makes an older
 manifest stale and requires regeneration.

@@ -16,6 +16,7 @@ GAP_HANDLING = {"questionnaire", "marked_draft", "gap_only"}
 PEER_MODES = {"style_reference", "quality_benchmark", "both", "none"}
 RETENTION_POLICIES = {"keep", "delete_after_export", "ask"}
 PROJECT_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]{2,63}$")
+STANDARD_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 
 
 def load_project_config(project_dir: Path) -> dict[str, Any]:
@@ -118,6 +119,17 @@ def validate_project_config(config: dict[str, Any]) -> list[str]:
             isinstance(item, str) for item in adaptations
         ):
             errors.append("deliverables.adaptations: must be a list of standard IDs")
+        else:
+            selected_ids = {
+                item.get("standard_id") for item in standards or [] if isinstance(item, dict)
+            }
+            if len(adaptations) != len(set(adaptations)):
+                errors.append("deliverables.adaptations: standard IDs must be unique")
+            for index, standard_id in enumerate(adaptations):
+                if not STANDARD_ID_PATTERN.fullmatch(standard_id):
+                    errors.append(f"deliverables.adaptations[{index}]: invalid standard ID")
+                elif standard_id not in selected_ids:
+                    errors.append(f"deliverables.adaptations[{index}]: standard must be selected")
 
     return errors
 

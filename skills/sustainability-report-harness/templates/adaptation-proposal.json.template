@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "target_standard_id": "<locked-standard-id>",
+  "items": [
+    {
+      "adaptation_id": "ADAPT-001",
+      "source_content_id": "<master-content-id>",
+      "action": "keep",
+      "reason": "该母版内容直接回应目标准则要求。",
+      "target_section_id": "<formal-outline-section-id>",
+      "adapted_text": null,
+      "supplemental_evidence_ids": [],
+      "content_type": "confirmed_fact",
+      "review_status": "unreviewed",
+      "reviewed_by": null,
+      "human_notes": null
+    }
+  ]
+}

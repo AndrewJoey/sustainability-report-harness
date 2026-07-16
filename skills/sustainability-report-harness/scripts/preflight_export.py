@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from report_harness.adaptation import adaptation_preflight
 from report_harness.command import run
+from report_harness.config import load_project_config
 from report_harness.io import read_jsonl
 from report_harness.ledger import preflight_clean_export, validate_ledger
 from report_harness.workflow import WorkflowStore
@@ -24,7 +26,11 @@ def main() -> int:
         records = read_jsonl(project_dir / "state" / "disclosure_ledger.jsonl")
         ledger_errors = validate_ledger(records)
         workflow = WorkflowStore(project_dir).load()
-        blockers = preflight_clean_export(records)
+        config = load_project_config(project_dir)
+        blockers = (
+            preflight_clean_export(records) if config["deliverables"]["master_report"] else []
+        )
+        blockers.extend(adaptation_preflight(project_dir, records))
         if workflow["checkpoints"]["master"]["status"] != "approved":
             blockers.append(
                 {

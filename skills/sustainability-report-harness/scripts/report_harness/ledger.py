@@ -7,6 +7,7 @@ from typing import Any
 
 from .io import read_jsonl
 from .models import (
+    Adaptation,
     Assessment,
     DisclosureContent,
     Evidence,
@@ -44,6 +45,8 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
     content_ids_global: set[str] = set()
     assessment_ids_global: set[str] = set()
     peer_assessment_ids_global: set[str] = set()
+    adaptation_ids_global: set[str] = set()
+    adaptation_sources_global: set[tuple[str, str]] = set()
     for index, record in enumerate(records):
         prefix = f"line {index + 1}"
         missing = REQUIRED_ENTRY_FIELDS - record.keys()
@@ -84,6 +87,12 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
             f"{prefix}.peer_assessments",
             errors,
         )
+        adaptations = _models(
+            Adaptation,
+            record.get("adaptations", []),
+            f"{prefix}.adaptations",
+            errors,
+        )
 
         if unified is None:
             continue
@@ -96,6 +105,7 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
         evidence_ids = {item.evidence_id for item in evidence}
         evidence_by_id = {item.evidence_id: item for item in evidence}
         content_ids = {item.content_id for item in content}
+        content_by_id = {item.content_id: item for item in content}
         _duplicates(requirement_ids, requirements, "requirement_id", prefix, errors)
         _duplicates(evidence_ids, evidence, "evidence_id", prefix, errors)
         _duplicates(content_ids, content, "content_id", prefix, errors)
@@ -218,6 +228,45 @@ def validate_ledger(records: list[dict[str, Any]]) -> list[str]:
                     errors.append(
                         f"{prefix}.peer_assessments.{item.peer_assessment_id}: "
                         "peer comparison requires peer_reference evidence"
+                    )
+        for item in adaptations:
+            _global_id(
+                item.adaptation_id,
+                adaptation_ids_global,
+                "adaptation_id",
+                prefix,
+                errors,
+            )
+            source_key = (item.target_standard_id, item.source_content_id)
+            if source_key in adaptation_sources_global:
+                errors.append(
+                    f"{prefix}.adaptations.{item.adaptation_id}: duplicate target/source pair"
+                )
+            adaptation_sources_global.add(source_key)
+            source = content_by_id.get(item.source_content_id)
+            if source is None:
+                errors.append(
+                    f"{prefix}.adaptations.{item.adaptation_id}: unknown source_content_id"
+                )
+            elif item.action in {"keep", "reorganize", "omit"} and (
+                item.content_type != source.content_type
+            ):
+                errors.append(
+                    f"{prefix}.adaptations.{item.adaptation_id}: reused master text must "
+                    "preserve content_type"
+                )
+            _missing_refs(
+                item.supplemental_evidence_ids,
+                evidence_ids,
+                f"{prefix}.adaptations.{item.adaptation_id}.supplemental_evidence_ids",
+                errors,
+            )
+            for evidence_id in item.supplemental_evidence_ids:
+                linked_evidence = evidence_by_id.get(evidence_id)
+                if linked_evidence and linked_evidence.classification != "client_evidence":
+                    errors.append(
+                        f"{prefix}.adaptations.{item.adaptation_id}: supplemental evidence "
+                        "must be client_evidence"
                     )
     return errors
 

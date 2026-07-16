@@ -3,6 +3,7 @@
 import pytest
 from report_harness.errors import HarnessError
 from report_harness.models import (
+    Adaptation,
     Assessment,
     DisclosureContent,
     Evidence,
@@ -96,6 +97,17 @@ from report_harness.models import (
             content_ids=["SIM-CONT-001"],
             evidence_ids=["SIM-EV-001"],
         ),
+        Adaptation(
+            adaptation_id="SIM-ADAPT-001",
+            target_standard_id="simulated-standard-a",
+            target_version_id="fixture-1",
+            source_content_id="SIM-CONT-001",
+            action="keep",
+            reason="模拟母版内容直接适用。",
+            target_section_id="SIM-SEC-001",
+            content_type="confirmed_fact",
+            review_status="unreviewed",
+        ),
     ],
 )
 def test_models_round_trip(model):
@@ -130,3 +142,21 @@ def test_assessment_uses_prd_needs_confirmation_status():
     )
 
     model.validate()
+
+
+def test_adaptation_cannot_hide_rewritten_text_behind_keep():
+    model = Adaptation(
+        adaptation_id="SIM-ADAPT-002",
+        target_standard_id="simulated-standard-a",
+        target_version_id="fixture-1",
+        source_content_id="SIM-CONT-001",
+        action="keep",
+        reason="模拟保留。",
+        target_section_id="SIM-SEC-001",
+        adapted_text="未经声明的改写文本",
+        content_type="confirmed_fact",
+        review_status="unreviewed",
+    )
+
+    with pytest.raises(HarnessError, match="must reuse master text"):
+        model.validate()

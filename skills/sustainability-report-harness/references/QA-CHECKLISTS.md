@@ -18,6 +18,8 @@ Apply the relevant checklist before approving a Checkpoint.
 - Formal outline covers every unified disclosure exactly once and has an approved Anchor selection.
 - Anchor and master proposals cover only their permitted section scopes.
 - Confirmed facts use accepted client evidence; peer evidence appears only in independent peer review.
+- Every configured adaptation covers each master content block once, preserves master links, and
+  does not entirely omit a target-standard requirement row.
 - Internal DOCX/XLSX exports match the current ledger hash and their manifest file hashes.
 - Clean export contains no unresolved content or unapproved gate.
 
@@ -30,6 +32,7 @@ Apply the relevant checklist before approving a Checkpoint.
 - Peer comparison remains separate from compliance response.
 - Improvement suggestions do not invent customer facts.
 - A named reviewer has decided every drafted content block and both assessment tracks.
+- A named reviewer has accepted or edited every adaptation action before clean export.
 
 ## Completion rule
 

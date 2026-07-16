@@ -399,6 +399,84 @@ class PeerAssessment(SerializableModel):
             )
 
 
+@dataclass(slots=True)
+class Adaptation(SerializableModel):
+    """One reviewed transformation from a master content block to a target standard."""
+
+    adaptation_id: str
+    target_standard_id: str
+    target_version_id: str
+    source_content_id: str
+    action: str
+    reason: str
+    content_type: str
+    review_status: str
+    target_section_id: str | None = None
+    adapted_text: str | None = None
+    supplemental_evidence_ids: list[str] = field(default_factory=list)
+    reviewed_by: str | None = None
+    human_notes: str | None = None
+
+    ACTIONS: ClassVar[set[str]] = {
+        "keep",
+        "condense",
+        "reorganize",
+        "supplement",
+        "omit",
+    }
+    CONTENT_TYPES: ClassVar[set[str]] = DisclosureContent.CONTENT_TYPES
+    REVIEW_STATUSES: ClassVar[set[str]] = DisclosureContent.REVIEW_STATUSES
+
+    def validate(self) -> None:
+        _require_nonempty(
+            self,
+            "adaptation_id",
+            "target_standard_id",
+            "target_version_id",
+            "source_content_id",
+            "reason",
+        )
+        _require_enum(self.action, self.ACTIONS, "action")
+        _require_enum(self.content_type, self.CONTENT_TYPES, "content_type")
+        _require_enum(self.review_status, self.REVIEW_STATUSES, "review_status")
+        _require_unique(self.supplemental_evidence_ids, "supplemental_evidence_ids")
+        if self.action == "omit":
+            require(
+                self.target_section_id is None and self.adapted_text is None,
+                "INVALID_ADAPTATION",
+                "omit cannot have a target section or adapted text",
+                "action",
+            )
+        else:
+            require(
+                isinstance(self.target_section_id, str) and bool(self.target_section_id.strip()),
+                "MISSING_VALUE",
+                "A non-omit adaptation requires target_section_id",
+                "target_section_id",
+            )
+        if self.action in {"condense", "supplement"}:
+            require(
+                isinstance(self.adapted_text, str) and bool(self.adapted_text.strip()),
+                "MISSING_VALUE",
+                f"{self.action} requires adapted_text",
+                "adapted_text",
+            )
+        else:
+            require(
+                self.adapted_text is None,
+                "INVALID_ADAPTATION",
+                f"{self.action} must reuse master text and cannot include adapted_text",
+                "adapted_text",
+            )
+        if self.review_status != "unreviewed":
+            require(
+                isinstance(self.reviewed_by, str) and bool(self.reviewed_by.strip()),
+                "REVIEWER_REQUIRED",
+                "reviewed_by is required after adaptation review",
+                "reviewed_by",
+            )
+
+
 def _require_nonempty(model: object, *fields: str) -> None:
     for name in fields:
         value = getattr(model, name)

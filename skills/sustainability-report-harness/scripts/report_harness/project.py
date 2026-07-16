@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from .adaptation import validate_project_adaptations
 from .audit import append_event
 from .config import load_project_config, validate_project_config
 from .errors import HarnessError
@@ -179,6 +180,11 @@ def validate_project(project_dir: Path) -> list[str]:
             )
         except (OSError, json.JSONDecodeError, HarnessError) as exc:
             errors.append(f"state/outline.json: {exc}")
+    if ledger.is_file():
+        try:
+            errors.extend(validate_project_adaptations(project_dir))
+        except HarnessError as exc:
+            errors.append(str(exc))
     errors.extend(validate_export_manifest(project_dir, "internal"))
     errors.extend(validate_export_manifest(project_dir, "clean"))
     return errors
