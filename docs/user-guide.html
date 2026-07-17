@@ -1,0 +1,1410 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#174a3a">
+  <meta name="description" content="Sustainability Report Harness 的可视化中文使用指南。">
+  <title>使用指南 · Sustainability Report Harness</title>
+  <style>
+    :root {
+      --forest-950: #0b2b23;
+      --forest-900: #103b2f;
+      --forest-800: #174a3a;
+      --forest-700: #23624e;
+      --forest-100: #dfece5;
+      --forest-50: #f0f7f3;
+      --paper: #fbfaf5;
+      --paper-deep: #f2eee3;
+      --ink: #17221d;
+      --muted: #637068;
+      --line: #d8ddd7;
+      --white: #ffffff;
+      --amber: #e49a3a;
+      --amber-soft: #fff1d8;
+      --red: #a94a3f;
+      --red-soft: #fbe9e5;
+      --blue: #315f7d;
+      --blue-soft: #e7f0f5;
+      --shadow-sm: 0 1px 2px rgba(11, 43, 35, 0.08);
+      --shadow-md: 0 18px 45px rgba(11, 43, 35, 0.11);
+      --radius-sm: 10px;
+      --radius-md: 18px;
+      --radius-lg: 26px;
+      --content: 1160px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-size: 16px;
+      line-height: 1.72;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    a { color: var(--forest-700); text-underline-offset: 3px; }
+    a:hover { color: var(--forest-900); }
+    code, pre {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+    code {
+      padding: 0.12em 0.35em;
+      border-radius: 5px;
+      background: #edf1ed;
+      font-size: 0.9em;
+    }
+    img { max-width: 100%; }
+    :focus-visible {
+      outline: 3px solid rgba(228, 154, 58, 0.65);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 100;
+      transform: translateY(-160%);
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--forest-900);
+      box-shadow: var(--shadow-md);
+      transition: transform 160ms ease;
+    }
+    .skip-link:focus { transform: translateY(0); }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+      background: rgba(11, 43, 35, 0.96);
+      color: var(--white);
+      backdrop-filter: blur(12px);
+    }
+    .topbar-inner {
+      width: min(calc(100% - 36px), var(--content));
+      min-height: 62px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--white);
+      text-decoration: none;
+      font-weight: 720;
+      letter-spacing: -0.02em;
+    }
+    .brand-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 50%;
+      color: #f0c477;
+      font-size: 18px;
+    }
+    .topbar-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #d9e7df;
+      font-size: 13px;
+    }
+    .status-pill {
+      padding: 4px 9px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .hero {
+      overflow: hidden;
+      color: var(--white);
+      background: var(--forest-950);
+    }
+    .hero-inner {
+      position: relative;
+      width: min(calc(100% - 36px), var(--content));
+      min-height: 510px;
+      margin: 0 auto;
+      padding: 72px 0 68px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(310px, 0.65fr);
+      align-items: center;
+      gap: 68px;
+    }
+    .hero-inner::after {
+      content: "";
+      position: absolute;
+      width: 470px;
+      height: 470px;
+      right: -280px;
+      top: -260px;
+      border: 88px solid rgba(255, 255, 255, 0.035);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .eyebrow {
+      margin: 0 0 18px;
+      color: #efc67d;
+      font-size: 13px;
+      font-weight: 760;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4 { line-height: 1.24; }
+    h1 {
+      max-width: 740px;
+      margin: 0;
+      font-family: Georgia, "Songti SC", "STSong", serif;
+      font-size: clamp(42px, 6vw, 74px);
+      font-weight: 500;
+      letter-spacing: -0.045em;
+    }
+    .hero-lead {
+      max-width: 720px;
+      margin: 24px 0 0;
+      color: #d5e4dc;
+      font-size: clamp(17px, 2vw, 20px);
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 32px;
+    }
+    .button {
+      display: inline-flex;
+      min-height: 46px;
+      padding: 10px 18px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+    .button:hover { transform: translateY(-1px); }
+    .button-primary {
+      background: var(--amber);
+      color: var(--forest-950);
+      box-shadow: 0 10px 28px rgba(228, 154, 58, 0.2);
+    }
+    .button-primary:hover { color: var(--forest-950); background: #efaa4e; }
+    .button-secondary {
+      border-color: rgba(255, 255, 255, 0.24);
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--white);
+    }
+    .button-secondary:hover { color: var(--white); background: rgba(255, 255, 255, 0.12); }
+
+    .hero-card {
+      position: relative;
+      z-index: 1;
+      padding: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.075);
+      box-shadow: 0 26px 80px rgba(0, 0, 0, 0.18);
+      backdrop-filter: blur(10px);
+    }
+    .hero-card-title {
+      margin: 0 0 20px;
+      color: #e9f3ee;
+      font-size: 13px;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .deliverable {
+      display: grid;
+      grid-template-columns: 35px 1fr;
+      gap: 12px;
+      padding: 12px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .deliverable:first-of-type { border-top: 0; }
+    .file-icon {
+      display: grid;
+      width: 34px;
+      height: 40px;
+      place-items: center;
+      border-radius: 7px;
+      background: #f1c67c;
+      color: var(--forest-950);
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .deliverable strong { display: block; color: var(--white); font-size: 14px; }
+    .deliverable span { color: #bcd1c7; font-size: 12px; }
+
+    .quick-facts {
+      background: var(--white);
+      border-bottom: 1px solid var(--line);
+    }
+    .quick-facts-inner {
+      width: min(calc(100% - 36px), var(--content));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .fact {
+      padding: 22px 24px;
+      border-left: 1px solid var(--line);
+    }
+    .fact:first-child { border-left: 0; padding-left: 0; }
+    .fact-label { display: block; color: var(--muted); font-size: 12px; }
+    .fact-value { display: block; margin-top: 2px; font-weight: 760; }
+
+    .page-layout {
+      width: min(calc(100% - 36px), var(--content));
+      margin: 0 auto;
+      padding: 70px 0 100px;
+      display: grid;
+      grid-template-columns: 218px minmax(0, 1fr);
+      align-items: start;
+      gap: 62px;
+    }
+    .side-nav {
+      position: sticky;
+      top: 90px;
+      padding-right: 20px;
+      border-right: 1px solid var(--line);
+    }
+    .side-nav-title {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+    .side-nav a {
+      display: block;
+      margin: 4px 0;
+      padding: 7px 10px;
+      border-radius: 8px;
+      color: #59655f;
+      font-size: 14px;
+      text-decoration: none;
+    }
+    .side-nav a:hover,
+    .side-nav a[aria-current="true"] {
+      background: var(--forest-100);
+      color: var(--forest-900);
+      font-weight: 720;
+    }
+    .side-nav-note {
+      margin-top: 24px;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      background: var(--paper-deep);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .side-nav-note strong { color: var(--ink); }
+
+    main { min-width: 0; }
+    .section {
+      padding: 26px 0 68px;
+      scroll-margin-top: 84px;
+      border-top: 1px solid var(--line);
+    }
+    .section:first-child { padding-top: 0; border-top: 0; }
+    .section-kicker {
+      margin: 0 0 8px;
+      color: var(--forest-700);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+    h2 {
+      margin: 0;
+      font-family: Georgia, "Songti SC", "STSong", serif;
+      font-size: clamp(30px, 4vw, 44px);
+      font-weight: 500;
+      letter-spacing: -0.025em;
+    }
+    .section-lead {
+      max-width: 760px;
+      margin: 14px 0 28px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+    h3 { margin: 0 0 10px; font-size: 20px; }
+    h4 { margin: 0 0 8px; font-size: 16px; }
+    p { margin: 0 0 1em; }
+
+    .callout {
+      margin: 24px 0;
+      padding: 18px 20px;
+      border: 1px solid #c9dcd1;
+      border-left: 4px solid var(--forest-700);
+      border-radius: var(--radius-sm);
+      background: var(--forest-50);
+    }
+    .callout.warning {
+      border-color: #ebd2a5;
+      border-left-color: var(--amber);
+      background: var(--amber-soft);
+    }
+    .callout.danger {
+      border-color: #e7c3bc;
+      border-left-color: var(--red);
+      background: var(--red-soft);
+    }
+    .callout strong { display: block; margin-bottom: 3px; }
+    .callout p:last-child { margin-bottom: 0; }
+
+    .path-switcher {
+      margin-top: 30px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding: 6px;
+      background: var(--paper-deep);
+      gap: 6px;
+    }
+    .tab-button {
+      min-height: 55px;
+      padding: 8px 14px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+    }
+    .tab-button strong { display: block; color: inherit; }
+    .tab-button span { display: block; font-size: 12px; }
+    .tab-button[aria-selected="true"] {
+      background: var(--white);
+      color: var(--forest-900);
+      box-shadow: var(--shadow-sm);
+    }
+    .tab-panel { padding: 28px; }
+    .tab-panel[hidden] { display: none; }
+
+    .prompt-box,
+    .code-box {
+      position: relative;
+      overflow: hidden;
+      margin: 16px 0 0;
+      border-radius: var(--radius-sm);
+      background: var(--forest-950);
+      color: #edf6f1;
+    }
+    .prompt-box pre,
+    .code-box pre {
+      overflow-x: auto;
+      margin: 0;
+      padding: 22px 58px 22px 20px;
+      white-space: pre-wrap;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+    .code-box pre { white-space: pre; }
+    .copy-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 6px 9px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #dcebe4;
+      font-size: 12px;
+    }
+    .copy-button:hover { background: rgba(255, 255, 255, 0.15); }
+
+    .checklist {
+      display: grid;
+      gap: 10px;
+      margin: 24px 0;
+    }
+    .check-item {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+    .check-item input {
+      width: 20px;
+      height: 20px;
+      margin: 0;
+      accent-color: var(--forest-700);
+    }
+    .check-item label { cursor: pointer; }
+    .check-item small { color: var(--muted); }
+    .requirement-tag {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--red-soft);
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+    .requirement-tag.optional {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+    .check-progress {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .progress-track {
+      height: 8px;
+      flex: 1;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #e0e4df;
+    }
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--forest-700);
+      transition: width 220ms ease;
+    }
+
+    .flow {
+      position: relative;
+      display: grid;
+      gap: 14px;
+      margin: 30px 0;
+    }
+    .flow::before {
+      content: "";
+      position: absolute;
+      top: 30px;
+      bottom: 30px;
+      left: 27px;
+      width: 2px;
+      background: var(--forest-100);
+    }
+    .flow-step {
+      position: relative;
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 20px 18px 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+    .step-number {
+      z-index: 1;
+      display: grid;
+      width: 38px;
+      height: 38px;
+      margin-left: 8px;
+      place-items: center;
+      border: 5px solid var(--white);
+      border-radius: 50%;
+      background: var(--forest-800);
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: 0 0 0 1px var(--forest-100);
+    }
+    .flow-step h3 { margin: 0 0 2px; font-size: 16px; }
+    .flow-step p { margin: 0; color: var(--muted); font-size: 13px; }
+    .human-gate {
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--amber-soft);
+      color: #815312;
+      font-size: 11px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .step-cards {
+      display: grid;
+      gap: 18px;
+      margin-top: 28px;
+    }
+    .step-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+    .step-card-header {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 14px;
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--line);
+      background: #f8f8f3;
+    }
+    .step-card-number {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 11px;
+      background: var(--forest-800);
+      color: var(--white);
+      font-weight: 800;
+    }
+    .step-card-header h3 { margin: 0 0 3px; }
+    .step-card-header p { margin: 0; color: var(--muted); font-size: 13px; }
+    .step-card-body { padding: 22px 24px; }
+    .step-card-body ul { margin: 10px 0 0; padding-left: 20px; }
+    .step-card-body li { margin: 5px 0; }
+    .review-question {
+      margin-top: 18px;
+      padding: 13px 15px;
+      border-radius: 10px;
+      background: var(--amber-soft);
+      font-size: 13px;
+    }
+    .review-question strong { color: #74490c; }
+
+    .folder-tree {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .folder {
+      min-height: 148px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-top: 4px solid var(--forest-700);
+      border-radius: 6px 6px 12px 12px;
+      background: var(--white);
+    }
+    .folder.optional { border-top-color: var(--blue); }
+    .folder .folder-icon { font-size: 24px; }
+    .folder strong { display: block; margin: 8px 0 3px; }
+    .folder code { word-break: break-all; font-size: 11px; }
+    .folder p { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .legend-card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--white);
+    }
+    .legend-card .marker {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .marker.inference { background: var(--amber-soft); color: #7a5012; }
+    .marker.suggested { background: var(--blue-soft); color: var(--blue); }
+    .marker.gap { background: var(--red-soft); color: var(--red); }
+    .legend-card p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .output-tree {
+      margin: 24px 0;
+      padding: 22px;
+      border-radius: var(--radius-md);
+      background: var(--forest-950);
+      color: #d9e8e0;
+      box-shadow: var(--shadow-md);
+    }
+    .output-row {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+    }
+    .output-row:last-child { border-bottom: 0; }
+    .output-row .file-icon { height: 36px; }
+    .output-row strong { display: block; color: var(--white); }
+    .output-row span { display: block; color: #a9c2b6; font-size: 12px; }
+
+    .boundary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 24px 0;
+    }
+    .boundary-card {
+      min-width: 0;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--white);
+    }
+    .boundary-card.good { border-top: 5px solid var(--forest-700); }
+    .boundary-card.bad { border-top: 5px solid var(--red); }
+    .boundary-card ul { margin: 12px 0 0; padding-left: 20px; }
+    .boundary-card li { margin: 6px 0; }
+
+    .clone-grid {
+      display: grid;
+      gap: 16px;
+      margin: 26px 0;
+    }
+    .clone-card {
+      min-width: 0;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--forest-700);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+    .clone-card-intro {
+      padding: 24px 22px;
+      border-right: 1px solid var(--line);
+      background: var(--forest-50);
+    }
+    .clone-card-intro h3 { margin: 10px 0 8px; }
+    .clone-card-intro p { margin: 0; color: var(--muted); font-size: 13px; }
+    .clone-badge {
+      display: inline-grid;
+      min-width: 34px;
+      height: 28px;
+      padding: 0 9px;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--forest-800);
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+    .clone-card-content {
+      min-width: 0;
+      padding: 20px;
+    }
+    .clone-card-content .code-box,
+    .clone-card-content .prompt-box { margin: 0; }
+    .clone-card-content .copy-button {
+      position: static;
+      display: block;
+      margin: 10px 10px 0 auto;
+    }
+    .clone-card-content .code-box pre,
+    .clone-card-content .prompt-box pre {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      white-space: pre-wrap;
+      padding: 10px 18px 18px;
+    }
+    .clone-note {
+      margin: 14px 2px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .command-list { display: grid; gap: 14px; margin-top: 24px; }
+    .command-item {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--white);
+    }
+    .command-label {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .command-item .code-box { margin: 0; border-radius: 0; }
+
+    details {
+      border-top: 1px solid var(--line);
+      background: var(--white);
+    }
+    details:last-child { border-bottom: 1px solid var(--line); }
+    summary {
+      position: relative;
+      padding: 18px 44px 18px 4px;
+      list-style: none;
+      font-weight: 720;
+      cursor: pointer;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after {
+      content: "+";
+      position: absolute;
+      right: 8px;
+      color: var(--forest-700);
+      font-size: 23px;
+      font-weight: 400;
+    }
+    details[open] summary::after { content: "−"; }
+    .details-body { padding: 0 44px 18px 4px; color: var(--muted); }
+
+    .footer {
+      padding: 38px 18px;
+      background: var(--forest-950);
+      color: #b6ccc1;
+      text-align: center;
+      font-size: 13px;
+    }
+    .footer strong { color: var(--white); }
+    .footer a { color: #efc67d; }
+
+    .noscript {
+      padding: 10px 18px;
+      background: var(--amber-soft);
+      color: #6e470e;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; gap: 36px; }
+      .hero-card { max-width: 600px; }
+      .quick-facts-inner { grid-template-columns: 1fr 1fr; }
+      .fact { border-bottom: 1px solid var(--line); }
+      .fact:nth-child(odd) { border-left: 0; padding-left: 0; }
+      .page-layout { grid-template-columns: 1fr; gap: 30px; padding-top: 0; }
+      .side-nav {
+        position: sticky;
+        top: 61px;
+        z-index: 30;
+        display: flex;
+        overflow-x: auto;
+        margin: 0 -18px;
+        padding: 9px 18px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        background: rgba(251, 250, 245, 0.96);
+        backdrop-filter: blur(10px);
+      }
+      .side-nav-title, .side-nav-note { display: none; }
+      .side-nav a { flex: 0 0 auto; white-space: nowrap; }
+      .section { scroll-margin-top: 120px; }
+      .folder-tree, .legend { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .topbar-meta .status-pill:first-child { display: none; }
+      .hero-inner { min-height: 0; padding: 54px 0; }
+      .hero-actions { flex-direction: column; align-items: stretch; }
+      .quick-facts-inner { grid-template-columns: 1fr; }
+      .fact, .fact:nth-child(odd) { padding: 15px 0; border-left: 0; }
+      .tabs { grid-template-columns: 1fr; }
+      .tab-panel { padding: 20px; }
+      .check-item { grid-template-columns: 26px 1fr; }
+      .requirement-tag { grid-column: 2; justify-self: start; }
+      .flow-step { grid-template-columns: 50px 1fr; }
+      .human-gate { grid-column: 2; justify-self: start; }
+      .step-card-header, .step-card-body { padding-left: 18px; padding-right: 18px; }
+      .boundary-grid { grid-template-columns: 1fr; }
+      .clone-card { grid-template-columns: 1fr; }
+      .clone-card-intro {
+        padding: 18px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .clone-card-content { padding: 14px; }
+      .topbar-inner { min-height: 58px; }
+      .brand span:last-child { font-size: 13px; }
+    }
+
+    @media print {
+      .topbar, .side-nav, .hero-actions, .copy-button, .check-progress { display: none !important; }
+      .hero { color: var(--ink); background: var(--white); }
+      .hero-inner { min-height: auto; display: block; padding: 28px 0; }
+      .hero-lead, .eyebrow { color: var(--ink); }
+      .hero-card { margin-top: 22px; color: var(--ink); background: var(--white); box-shadow: none; }
+      .hero-card-title, .deliverable strong { color: var(--ink); }
+      .deliverable span { color: var(--muted); }
+      .page-layout { display: block; padding: 32px 0; }
+      .section { break-inside: avoid; }
+      .tab-panel[hidden] { display: block; }
+      .prompt-box, .code-box, .output-tree { border: 1px solid var(--line); background: var(--white); color: var(--ink); box-shadow: none; }
+      .output-row strong { color: var(--ink); }
+      .output-row span { color: var(--muted); }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <noscript><div class="noscript">JavaScript 已关闭：指南内容仍可阅读，但复制按钮、路径切换和准备进度不可用。</div></noscript>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#top" aria-label="返回指南顶部">
+        <span class="brand-mark" aria-hidden="true">◎</span>
+        <span>Sustainability Report Harness</span>
+      </a>
+      <div class="topbar-meta">
+        <span class="status-pill">Markdown-first</span>
+        <span class="status-pill">M5.3</span>
+      </div>
+    </div>
+  </header>
+
+  <div id="top" class="hero">
+    <div class="hero-inner">
+      <div>
+        <p class="eyebrow">中文可视化使用指南</p>
+        <h1>从客户资料到可审阅的报告初版</h1>
+        <p class="hero-lead">
+          让 AI Agent 帮你整理证据、覆盖多套准则，并生成一份母版和逐准则 Markdown 初稿；关键业务判断始终由顾问确认。
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#start">3 分钟开始使用 <span aria-hidden="true">→</span></a>
+          <a class="button button-secondary" href="#workflow">查看完整流程</a>
+        </div>
+      </div>
+      <aside class="hero-card" aria-label="最终交付物">
+        <p class="hero-card-title">一次完整运行的交付物</p>
+        <div class="deliverable">
+          <span class="file-icon">MD</span>
+          <div><strong>报告母版</strong><span>覆盖所有已确认准则的要求并集</span></div>
+        </div>
+        <div class="deliverable">
+          <span class="file-icon">MD</span>
+          <div><strong>逐准则适配稿</strong><span>每套准则一份独立、可追溯初稿</span></div>
+        </div>
+        <div class="deliverable">
+          <span class="file-icon">#</span>
+          <div><strong>完整性清单</strong><span>用文件哈希发现输入或输出是否过期</span></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <section class="quick-facts" aria-label="产品速览">
+    <div class="quick-facts-inner">
+      <div class="fact"><span class="fact-label">主要用户</span><span class="fact-value">ESG / 可持续发展顾问</span></div>
+      <div class="fact"><span class="fact-label">支持输入</span><span class="fact-value">DOCX · PDF · XLSX</span></div>
+      <div class="fact"><span class="fact-label">默认输出</span><span class="fact-value">中文 Markdown 初版</span></div>
+      <div class="fact"><span class="fact-label">数据策略</span><span class="fact-value">本地优先 · 人工确认</span></div>
+    </div>
+  </section>
+
+  <div class="page-layout">
+    <nav class="side-nav" aria-label="页面目录">
+      <p class="side-nav-title">本页目录</p>
+      <a href="#overview">这是什么</a>
+      <a href="#clone">获取项目</a>
+      <a href="#start">开始使用</a>
+      <a href="#prepare">准备材料</a>
+      <a href="#workflow">完整流程</a>
+      <a href="#outputs">查看结果</a>
+      <a href="#safety">安全边界</a>
+      <a href="#manual">手动命令</a>
+      <a href="#faq">常见问题</a>
+      <div class="side-nav-note"><strong>请记住</strong><br>这是一套本地 AI 工作流，不是合规认证工具。</div>
+    </nav>
+
+    <main id="main">
+      <section id="overview" class="section">
+        <p class="section-kicker">01 · Overview</p>
+        <h2>它做什么，也不做什么</h2>
+        <p class="section-lead">
+          Harness 把分散的资料、准则要求、证据和草稿连接成一条可恢复、可审阅、可追溯的工作流。
+        </p>
+        <div class="boundary-grid">
+          <div class="boundary-card good">
+            <h3>它可以帮助你</h3>
+            <ul>
+              <li>解析客户的 Word、文本型 PDF 和 Excel 材料</li>
+              <li>形成多套准则要求的完整并集</li>
+              <li>记录证据、缺口、推断和建议文本</li>
+              <li>先审 Anchor 章节，再扩写完整母版</li>
+              <li>从母版派生每套准则的适配稿</li>
+              <li>在不同 Agent 或不同对话之间接续项目</li>
+            </ul>
+          </div>
+          <div class="boundary-card bad">
+            <h3>它不会替你决定</h3>
+            <ul>
+              <li>企业究竟适用哪套准则</li>
+              <li>未经审核的法规文本是否正确</li>
+              <li>推断能否升级为客户确认事实</li>
+              <li>是否可以上传客户资料或调用云端 OCR</li>
+              <li>报告是否满足法律、审计、鉴证或合规要求</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout warning">
+          <strong>当前产品状态</strong>
+          M5.3 工程功能已完成，但真实项目仍需要顾问提供正式、已审核的准则包，并完成专业审阅。仓库内的模拟准则只能用于测试。
+        </div>
+      </section>
+
+      <section id="clone" class="section">
+        <p class="section-kicker">02 · Get the Project</p>
+        <h2>先从 GitHub 获取项目</h2>
+        <p class="section-lead">仓库是公开的。你可以自己在终端克隆，也可以把明确的地址交给能够使用终端的 AI 助手完成。</p>
+
+        <div class="clone-grid">
+          <article class="clone-card">
+            <div class="clone-card-intro">
+              <span class="clone-badge">A</span>
+              <h3>手动命令行</h3>
+              <p>适合习惯使用终端，或希望清楚看到每一步的用户。</p>
+            </div>
+            <div class="clone-card-content">
+              <div class="code-box">
+                <button class="copy-button" type="button" data-copy aria-label="复制克隆命令">复制命令</button>
+                <pre>cd ~/Documents
+git clone https://github.com/AndrewJoey/sustainability-report-harness.git
+cd sustainability-report-harness
+make install</pre>
+              </div>
+              <p class="clone-note">需要电脑已经安装 Git。如果不确定，可先运行 <code>git --version</code>。克隆只需执行一次，以后直接打开本地目录即可。</p>
+            </div>
+          </article>
+
+          <article class="clone-card">
+            <div class="clone-card-intro">
+              <span class="clone-badge">B</span>
+              <h3>让 AI 助手克隆</h3>
+              <p>适合在 Codex 或其他能够操作本地终端的 AI 助手中使用。</p>
+            </div>
+            <div class="clone-card-content">
+              <div class="prompt-box">
+                <button class="copy-button" type="button" data-copy aria-label="复制 AI 克隆提示词">复制提示词</button>
+                <pre>请把这个公开 GitHub 仓库克隆到我的本地工作区：
+https://github.com/AndrewJoey/sustainability-report-harness.git
+
+克隆完成后进入仓库，安装锁定依赖，并阅读 README.md 和完整的 sustainability-report-harness Skill。
+先不要创建客户项目，不要提交或推送任何文件；完成后告诉我本地路径和检查结果。</pre>
+              </div>
+              <p class="clone-note">AI 助手可能会请求联网和写入目标文件夹的权限。确认目标路径与仓库地址正确后再授权。</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="callout danger">
+          <strong>GitHub 仓库与客户项目是两件事</strong>
+          GitHub 只用于存放 Harness 代码。克隆完成后，真实客户项目和客户资料仍应创建在代码仓库之外，且不得提交或推送到 GitHub。
+        </div>
+      </section>
+
+      <section id="start" class="section">
+        <p class="section-kicker">03 · Quick Start</p>
+        <h2>选择你的使用方式</h2>
+        <p class="section-lead">日常使用建议直接让支持本地 Skill 的 AI Agent 操作；手动命令更适合开发验证和问题排查。</p>
+
+        <div class="path-switcher">
+          <div class="tabs" role="tablist" aria-label="使用方式">
+            <button id="tab-agent" class="tab-button" type="button" role="tab" aria-selected="true" aria-controls="panel-agent">
+              <strong>方式 A · 交给 AI Agent</strong><span>推荐给报告顾问，无需记命令</span>
+            </button>
+            <button id="tab-manual" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-manual" tabindex="-1">
+              <strong>方式 B · 手动运行</strong><span>适合开发人员和故障排查</span>
+            </button>
+          </div>
+
+          <div id="panel-agent" class="tab-panel" role="tabpanel" aria-labelledby="tab-agent">
+            <h3>把下面这段话发给 Agent</h3>
+            <p>请确保 Agent 能读取本仓库及完整的 <code>sustainability-report-harness</code> Skill 目录。</p>
+            <div class="prompt-box">
+              <button class="copy-button" type="button" data-copy aria-label="复制提示词">复制</button>
+              <pre>请使用 sustainability-report-harness 创建一个可持续发展报告项目。
+先向我确认客户材料、既有报告或模板、目标准则、参考案例、报告用途、读者、文风和必需议题。
+不要直接开始生成；每个关键 Checkpoint 都等我确认。
+客户资料默认只在本地处理，不要擅自联网、上传或调用云端 OCR。</pre>
+            </div>
+            <div class="callout">
+              <strong>接下来会发生什么？</strong>
+              Agent 会先问问题和创建项目目录，再引导你放入资料、确认准则、审阅证据与报告初稿。所有状态都写入项目文件，不依赖当前聊天记录。
+            </div>
+          </div>
+
+          <div id="panel-manual" class="tab-panel" role="tabpanel" aria-labelledby="tab-manual" hidden>
+            <h3>先安装，再创建项目</h3>
+            <p>需要 Python 3.11+ 和 <code>uv</code>。在仓库根目录安装锁定依赖：</p>
+            <div class="code-box">
+              <button class="copy-button" type="button" data-copy aria-label="复制安装命令">复制</button>
+              <pre>make install</pre>
+            </div>
+            <p style="margin-top: 16px;">随后按本页的<a href="#manual">手动命令</a>逐步执行。真实客户项目请放在本仓库之外。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="prepare" class="section">
+        <p class="section-kicker">04 · Before You Start</p>
+        <h2>开始前准备清单</h2>
+        <p class="section-lead">勾选只保存在当前浏览器中，不会读取或上传任何文件。优秀案例可以不提供，但需要明确选择。</p>
+
+        <div class="checklist" data-checklist>
+          <div class="check-item">
+            <input id="check-client" type="checkbox">
+            <label for="check-client"><strong>客户事实材料</strong><br><small>例如制度、运营数据、政策、项目说明、历史披露</small></label>
+            <span class="requirement-tag">必须</span>
+          </div>
+          <div class="check-item">
+            <input id="check-template" type="checkbox">
+            <label for="check-template"><strong>既有报告或客户模板</strong><br><small>有则提供；没有则明确告诉 Agent“无”</small></label>
+            <span class="requirement-tag">必须回答</span>
+          </div>
+          <div class="check-item">
+            <input id="check-standards" type="checkbox">
+            <label for="check-standards"><strong>目标准则与已审核准则包</strong><br><small>至少一套，版本和适用性由顾问确认</small></label>
+            <span class="requirement-tag">必须</span>
+          </div>
+          <div class="check-item">
+            <input id="check-peer" type="checkbox">
+            <label for="check-peer"><strong>优秀 / 同行参考案例</strong><br><small>可用于风格参考、质量标杆或两者；也可明确不提供</small></label>
+            <span class="requirement-tag optional">可选但须回答</span>
+          </div>
+          <div class="check-item">
+            <input id="check-brief" type="checkbox">
+            <label for="check-brief"><strong>报告要求</strong><br><small>报告用途、目标读者、文风、必需议题和报告期</small></label>
+            <span class="requirement-tag">必须</span>
+          </div>
+          <div class="check-item">
+            <input id="check-policy" type="checkbox">
+            <label for="check-policy"><strong>数据处理边界</strong><br><small>是否可联网、云端处理、是否需脱敏及保留方式</small></label>
+            <span class="requirement-tag">必须</span>
+          </div>
+        </div>
+        <div class="check-progress" aria-live="polite">
+          <div class="progress-track"><div class="progress-bar" data-progress-bar></div></div>
+          <span data-progress-text>已准备 0 / 6</span>
+        </div>
+
+        <h3 style="margin-top: 34px;">资料应该放在哪里？</h3>
+        <div class="folder-tree">
+          <div class="folder">
+            <span class="folder-icon" aria-hidden="true">▰</span>
+            <strong>客户材料</strong>
+            <code>sources/client/</code>
+            <p>客户事实材料、历史报告及可作为证据的文件。</p>
+          </div>
+          <div class="folder">
+            <span class="folder-icon" aria-hidden="true">▰</span>
+            <strong>任务书 / 模板</strong>
+            <code>sources/requirements/</code>
+            <p>客户报告规格、任务书、格式或结构模板。</p>
+          </div>
+          <div class="folder optional">
+            <span class="folder-icon" aria-hidden="true">▰</span>
+            <strong>参考案例</strong>
+            <code>sources/peer/</code>
+            <p>只用于风格或质量对标，绝不能作为客户事实证据。</p>
+          </div>
+        </div>
+        <div class="callout danger">
+          <strong>不要把真实客户项目放进本代码仓库</strong>
+          在仓库之外建立独立的客户项目目录，也不要把客户资料提交到 GitHub。
+        </div>
+      </section>
+
+      <section id="workflow" class="section">
+        <p class="section-kicker">05 · Workflow</p>
+        <h2>一条有人工闸门的工作流</h2>
+        <p class="section-lead">系统负责确定性校验，Agent 负责提出建议，顾问负责关键判断。任何 Checkpoint 都不应被跳过。</p>
+
+        <div class="flow" aria-label="报告生成流程">
+          <div class="flow-step"><span class="step-number">01</span><div><h3>创建项目与确认数据授权</h3><p>建立本地目录，明确联网、云端处理和保留边界。</p></div><span class="human-gate">需确认</span></div>
+          <div class="flow-step"><span class="step-number">02</span><div><h3>确认项目问询</h3><p>把资料、框架、参考案例和写作要求保存到 intake。</p></div><span class="human-gate">需确认</span></div>
+          <div class="flow-step"><span class="step-number">03</span><div><h3>锁定准则并解析资料</h3><p>只使用已审核准则包；DOCX、PDF、XLSX 转为可追溯证据。</p></div><span class="human-gate">需确认</span></div>
+          <div class="flow-step"><span class="step-number">04</span><div><h3>形成要求并集与证据映射</h3><p>保留每套准则的特有要求，标记冲突和信息缺口。</p></div><span class="human-gate">需确认</span></div>
+          <div class="flow-step"><span class="step-number">05</span><div><h3>生成正式目录</h3><p>根据要求并集、客户规格和证据状况提出目录。</p></div><span class="human-gate">需确认</span></div>
+          <div class="flow-step"><span class="step-number">06</span><div><h3>先写 Anchor 代表章节</h3><p>先校准结构、颗粒度、文风和证据表达，再批量写作。</p></div><span class="human-gate">需确认</span></div>
+          <div class="flow-step"><span class="step-number">07</span><div><h3>完整母版与逐准则适配</h3><p>母版覆盖要求并集，每份适配稿都引用母版内容 ID。</p></div><span class="human-gate">需确认</span></div>
+          <div class="flow-step"><span class="step-number">08</span><div><h3>生成并验证 Markdown</h3><p>输出母版、各准则适配稿和完整性清单。</p></div><span class="human-gate">导出确认</span></div>
+        </div>
+
+        <div class="step-cards">
+          <article class="step-card">
+            <div class="step-card-header"><span class="step-card-number">A</span><div><h3>资料解析与 OCR</h3><p>扫描 PDF 不会被悄悄跳过，也不会被自动上传。</p></div></div>
+            <div class="step-card-body">
+              <p>如果 PDF 没有可搜索文本，Harness 会暂停，并检查本地是否有 PaddleOCR、Tesseract 等工具。若没有合适工具，由你选择：</p>
+              <ul><li>授权使用本地 OCR；</li><li>明确授权其他方式或云端 OCR；</li><li>补充可搜索版本；</li><li>人工录入；</li><li>暂停；</li><li>仅对明确非关键来源记录为信息缺口。</li></ul>
+              <div class="review-question"><strong>你要确认：</strong>允许采用哪一种处理方式，以及文件是否可以离开本地环境。</div>
+            </div>
+          </article>
+
+          <article class="step-card">
+            <div class="step-card-header"><span class="step-card-number">B</span><div><h3>证据、目录与 Anchor</h3><p>不要等完整报告写完后才发现方向不对。</p></div></div>
+            <div class="step-card-body">
+              <p>要求与证据映射先由 Agent 提议，全部新判断从 <code>unreviewed</code> 开始。顾问确认后，系统才会生成正式目录和一个代表性 Anchor 章节。</p>
+              <div class="review-question"><strong>你要确认：</strong>证据是否支持结论、缺口是否真实、目录是否完整，以及 Anchor 的结构、文风和颗粒度是否适合批量扩写。</div>
+            </div>
+          </article>
+
+          <article class="step-card">
+            <div class="step-card-header"><span class="step-card-number">C</span><div><h3>母版、适配与导出</h3><p>一份业务真相源，避免多份报告互相失联。</p></div></div>
+            <div class="step-card-body">
+              <p>完整正文从 <code>state/disclosure_ledger.jsonl</code> 派生。适配稿只能对母版内容执行保留、压缩、重组、补充或省略，并保留来源关系。</p>
+              <div class="review-question"><strong>你要确认：</strong>完整母版和每套准则的适配动作。导出后如任何输入或输出改变，必须重新验证或生成。</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="outputs" class="section">
+        <p class="section-kicker">06 · Deliverables</p>
+        <h2>如何读懂生成结果</h2>
+        <p class="section-lead">Markdown 初版会保留真实性标记和内部追溯 ID。它是一份“可审阅初版”，不是可以跳过专业复核的最终报告。</p>
+
+        <div class="output-tree" aria-label="输出文件列表">
+          <div class="output-row"><span class="file-icon">MD</span><div><strong>outputs/markdown/master_report.md</strong><span>覆盖所选准则要求并集的母版</span></div></div>
+          <div class="output-row"><span class="file-icon">MD</span><div><strong>outputs/markdown/adapted_&lt;standard-id&gt;.md</strong><span>每个已确认准则各生成一份适配初稿</span></div></div>
+          <div class="output-row"><span class="file-icon">#</span><div><strong>outputs/markdown/report_manifest.json</strong><span>绑定配置、问询、准则锁、证据、账本、目录和所有输出的哈希</span></div></div>
+        </div>
+
+        <h3>正文中的三类显式标记</h3>
+        <div class="legend">
+          <div class="legend-card"><span class="marker inference">[待确认-推断]</span><p>基于现有材料作出的推断，尚未被客户或顾问确认。</p></div>
+          <div class="legend-card"><span class="marker suggested">[建议文本]</span><p>建议采用的表达，不代表已经发生或已经获得证据支持。</p></div>
+          <div class="legend-card"><span class="marker gap">[信息缺口]</span><p>当前资料不足，应补充材料、问询客户或明确披露限制。</p></div>
+        </div>
+        <div class="callout">
+          <strong>HTML 注释不要随意删除</strong>
+          Markdown 内部的内容 ID、证据 ID 和适配来源 ID 用于追溯与后续校验。若要清理为客户版，应通过正式导出流程处理。
+        </div>
+      </section>
+
+      <section id="safety" class="section">
+        <p class="section-kicker">07 · Guardrails</p>
+        <h2>五条必须遵守的边界</h2>
+        <p class="section-lead">这些不是提示建议，而是为了保护客户资料、报告可信度和顾问判断设置的产品边界。</p>
+        <div class="step-cards">
+          <article class="step-card"><div class="step-card-header"><span class="step-card-number">1</span><div><h3>客户事实必须有客户证据</h3><p>同行材料不能证明客户做过什么。</p></div></div></article>
+          <article class="step-card"><div class="step-card-header"><span class="step-card-number">2</span><div><h3>准则必须由专业人员审核</h3><p>Agent 可以推荐报告期对应版本，但不能自行确认适用性或编造法规文本。</p></div></div></article>
+          <article class="step-card"><div class="step-card-header"><span class="step-card-number">3</span><div><h3>默认不联网、不上传</h3><p>只有在项目数据授权明确允许时，才能使用外部处理或联网能力。</p></div></div></article>
+          <article class="step-card"><div class="step-card-header"><span class="step-card-number">4</span><div><h3>不跳过人工 Checkpoint</h3><p>所有新语义判断先进入待审核状态，批准只记录真实发生的人工决定。</p></div></div></article>
+          <article class="step-card"><div class="step-card-header"><span class="step-card-number">5</span><div><h3>不直接覆盖人工修改</h3><p>项目文件是事实来源；接续时先校验当前状态和完整性快照。</p></div></div></article>
+        </div>
+      </section>
+
+      <section id="manual" class="section">
+        <p class="section-kicker">08 · Manual Reference</p>
+        <h2>手动操作速查</h2>
+        <p class="section-lead">下面用于开发验证和故障排查。把示例中的绝对路径、项目 ID、名称、日期和顾问姓名替换为真实值。</p>
+
+        <div class="command-list">
+          <div class="command-item">
+            <div class="command-label"><strong>1. 创建客户项目</strong> · 真实项目请放在代码仓库之外</div>
+            <div class="code-box"><button class="copy-button" type="button" data-copy aria-label="复制创建项目命令">复制</button><pre>uv run python skills/sustainability-report-harness/scripts/scaffold_project.py \
+  /absolute/path/to/client-project \
+  --project-id example-project \
+  --project-name "示例项目" \
+  --client-name "示例客户" \
+  --period-start 2025-01-01 \
+  --period-end 2025-12-31</pre></div>
+          </div>
+          <div class="command-item">
+            <div class="command-label"><strong>2. 确认数据授权并进入项目规格问询</strong></div>
+            <div class="code-box"><button class="copy-button" type="button" data-copy aria-label="复制数据授权命令">复制</button><pre>uv run python skills/sustainability-report-harness/scripts/workflow.py \
+  /absolute/path/to/client-project transition awaiting_data_consent
+
+uv run python skills/sustainability-report-harness/scripts/workflow.py \
+  /absolute/path/to/client-project checkpoint data_consent approved \
+  --approved-by "顾问姓名"
+
+uv run python skills/sustainability-report-harness/scripts/workflow.py \
+  /absolute/path/to/client-project transition awaiting_spec_confirmation</pre></div>
+          </div>
+          <div class="command-item">
+            <div class="command-label"><strong>3. 保存并确认 intake</strong> · 先填写模板副本</div>
+            <div class="code-box"><button class="copy-button" type="button" data-copy aria-label="复制 intake 命令">复制</button><pre>uv run python skills/sustainability-report-harness/scripts/confirm_intake.py confirm \
+  /absolute/path/to/client-project \
+  /absolute/path/to/intake.json \
+  --confirmed-by "顾问姓名"</pre></div>
+          </div>
+          <div class="command-item">
+            <div class="command-label"><strong>4. 锁定一套已审核准则包</strong> · 每套确认准则分别执行</div>
+            <div class="code-box"><button class="copy-button" type="button" data-copy aria-label="复制锁定准则命令">复制</button><pre>uv run python skills/sustainability-report-harness/scripts/standards.py lock \
+  /absolute/path/to/client-project \
+  --package /absolute/path/to/reviewed-standard.json \
+  --confirmed-by "顾问姓名"</pre></div>
+          </div>
+          <div class="command-item">
+            <div class="command-label"><strong>5. 生成并验证 Markdown</strong> · 仅在前置 Checkpoint 全部满足后执行</div>
+            <div class="code-box"><button class="copy-button" type="button" data-copy aria-label="复制导出命令">复制</button><pre>uv run python skills/sustainability-report-harness/scripts/export_markdown.py generate \
+  /absolute/path/to/client-project
+
+uv run python skills/sustainability-report-harness/scripts/export_markdown.py validate \
+  /absolute/path/to/client-project</pre></div>
+          </div>
+          <div class="command-item">
+            <div class="command-label"><strong>6. 开发检查</strong> · 在仓库根目录运行</div>
+            <div class="code-box"><button class="copy-button" type="button" data-copy aria-label="复制开发检查命令">复制</button><pre>make test
+make lint
+make validate</pre></div>
+          </div>
+        </div>
+        <div class="callout warning">
+          <strong>中间阶段没有“一条命令自动跑到底”</strong>
+          要求并集、证据、目录、Anchor、完整母版和适配都包含语义判断与人工审阅。日常使用应让 Agent 读取 Skill 后按项目当前状态推进。
+        </div>
+      </section>
+
+      <section id="faq" class="section">
+        <p class="section-kicker">09 · FAQ</p>
+        <h2>常见问题</h2>
+        <p class="section-lead">如果项目中断或结果看起来不对，先从状态、确认点和输入变化开始检查。</p>
+
+        <details>
+          <summary>我只想快速生成一版报告，可以跳过前面的确认吗？</summary>
+          <div class="details-body">不建议，也不允许绕过强制 Checkpoint。最短可靠路径仍然需要确认数据授权、项目规格、准则、证据、目录、Anchor、母版和导出。这样做是为了避免把推断写成事实或遗漏准则要求。</div>
+        </details>
+        <details>
+          <summary>优秀报告案例是必需的吗？</summary>
+          <div class="details-body">不是。你可以明确选择“不提供”。如果提供，要说明它用于风格参考、质量标杆或两者；其内容不能作为客户事实证据，也不能复制有辨识度的原文表达。</div>
+        </details>
+        <details>
+          <summary>扫描 PDF 没有文字怎么办？</summary>
+          <div class="details-body">Harness 会暂停并列出可用选择。它不会静默安装 OCR、调用云服务或假装解析成功。由你决定本地 OCR、经授权的其他方式、补充可搜索文件、人工录入、暂停或对明确非关键来源记录缺口。</div>
+        </details>
+        <details>
+          <summary>换一个 Agent 或重新打开对话，需要从头开始吗？</summary>
+          <div class="details-body">不需要。项目状态保存在本地目录中。新的 Agent 应读取 <code>project.yaml</code>、<code>state/workflow.json</code> 和 <code>state/handoff.json</code>，校验快照后从当前阶段继续。</div>
+        </details>
+        <details>
+          <summary>为什么修改材料后输出提示过期？</summary>
+          <div class="details-body">输出清单会绑定客户材料、模板、参考案例、intake、准则锁、要求并集、账本、目录和生成文件的哈希。任何关联文件变化都可能使旧输出失效；请重新完成受影响的审阅并生成、验证输出。</div>
+        </details>
+        <details>
+          <summary>可以直接生成 Word 吗？</summary>
+          <div class="details-body">当前 MVP 的主交付是 Markdown。仓库保留旧的 DOCX/XLSX 内部审阅能力，但 Word 模板化输出属于后续增强，不应作为当前默认交付来承诺。</div>
+        </details>
+      </section>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <strong>Sustainability Report Harness</strong> · 本地优先、证据可追溯、人工确认<br>
+    更完整的产品和开发说明请查看 <a href="../README.md">README</a>、<a href="../PROJECT_PLAN.md">项目计划</a>和<a href="../PRD.md">PRD</a>。
+  </footer>
+
+  <script>
+    (() => {
+      const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+      const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+
+      function activateTab(nextTab) {
+        tabs.forEach((tab) => {
+          const selected = tab === nextTab;
+          tab.setAttribute('aria-selected', String(selected));
+          tab.tabIndex = selected ? 0 : -1;
+        });
+        panels.forEach((panel) => {
+          panel.hidden = panel.id !== nextTab.getAttribute('aria-controls');
+        });
+      }
+
+      tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => activateTab(tab));
+        tab.addEventListener('keydown', (event) => {
+          if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+          event.preventDefault();
+          const direction = event.key === 'ArrowRight' ? 1 : -1;
+          const next = tabs[(index + direction + tabs.length) % tabs.length];
+          activateTab(next);
+          next.focus();
+        });
+      });
+
+      document.querySelectorAll('[data-copy]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const text = button.nextElementSibling?.textContent?.trim() || '';
+          const original = button.textContent;
+          try {
+            await navigator.clipboard.writeText(text);
+            button.textContent = '已复制';
+          } catch (_error) {
+            button.textContent = '请手动复制';
+          }
+          window.setTimeout(() => { button.textContent = original; }, 1600);
+        });
+      });
+
+      const checks = Array.from(document.querySelectorAll('[data-checklist] input[type="checkbox"]'));
+      const progressBar = document.querySelector('[data-progress-bar]');
+      const progressText = document.querySelector('[data-progress-text]');
+      const storageKey = 'srh-user-guide-checklist-v1';
+
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        checks.forEach((check) => { check.checked = Boolean(saved[check.id]); });
+      } catch (_error) {
+        // The checklist remains usable even when local storage is unavailable.
+      }
+
+      function updateProgress() {
+        const completed = checks.filter((check) => check.checked).length;
+        const percent = checks.length ? (completed / checks.length) * 100 : 0;
+        progressBar.style.width = `${percent}%`;
+        progressText.textContent = completed === checks.length
+          ? '准备完成，可以开始'
+          : `已准备 ${completed} / ${checks.length}`;
+        try {
+          const state = Object.fromEntries(checks.map((check) => [check.id, check.checked]));
+          localStorage.setItem(storageKey, JSON.stringify(state));
+        } catch (_error) {
+          // Do not block the guide when local storage is unavailable.
+        }
+      }
+
+      checks.forEach((check) => check.addEventListener('change', updateProgress));
+      updateProgress();
+
+      const navLinks = Array.from(document.querySelectorAll('.side-nav a'));
+      const sections = Array.from(document.querySelectorAll('main > .section'));
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            navLinks.forEach((link) => {
+              const isCurrent = link.getAttribute('href') === `#${entry.target.id}`;
+              if (isCurrent) link.setAttribute('aria-current', 'true');
+              else link.removeAttribute('aria-current');
+            });
+          });
+        }, { rootMargin: '-18% 0px -70% 0px' });
+        sections.forEach((section) => observer.observe(section));
+      }
+    })();
+  </script>
+</body>
+</html>
