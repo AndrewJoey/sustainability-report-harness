@@ -5,6 +5,8 @@ Apply the relevant checklist before approving a Checkpoint.
 ## Deterministic checks
 
 - Project configuration is valid.
+- Confirmed intake names existing customer files, an explicit existing-report choice, target
+  frameworks, an explicit reference-case choice, and reporting preferences.
 - Workflow state and Checkpoint dependencies are valid.
 - IDs are nonempty and unique.
 - All ledger references resolve.
@@ -21,7 +23,14 @@ Apply the relevant checklist before approving a Checkpoint.
 - Every configured adaptation covers each master content block once, preserves master links, and
   does not entirely omit a target-standard requirement row.
 - Internal DOCX/XLSX exports match the current ledger hash and their manifest file hashes.
+- Markdown delivery contains one union master and exactly one adaptation per confirmed framework;
+  risk labels and evidence comments remain present and the report manifest hashes are current.
 - Clean export contains no unresolved content or unapproved gate.
+- Cross-Agent handoff hashes match the current workflow, Checkpoints, contracts, and source
+  fingerprints.
+- Unchanged source paths, hashes, and parser versions are reused without `--force`.
+- Trial records include time, correction, retention, coverage, and repeated-file fields; their
+  summary hash matches the append-only source records.
 
 ## Human or model-assisted checks
 
@@ -33,6 +42,8 @@ Apply the relevant checklist before approving a Checkpoint.
 - Improvement suggestions do not invent customer facts.
 - A named reviewer has decided every drafted content block and both assessment tracks.
 - A named reviewer has accepted or edited every adaptation action before clean export.
+- A receiving Agent preserves human edits and accepted decisions and reports correction cost
+  together with time saved.
 
 ## Completion rule
 

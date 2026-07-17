@@ -14,7 +14,9 @@ Confirm client identity, reporting period, report type, purpose, audience, prima
 - Never replace confirmed standards, data policy, or human text silently.
 - Validate `project.yaml` after every change.
 
-## M1 boundary
+## MVP behavior
 
-The Harness supports creation, validation, confirmation state, and recovery. It does not extract a
-project brief from customer documents automatically.
+The Agent must ask for customer materials, an existing report or template, selected frameworks,
+excellent/reference cases, and reporting preferences. Persist those answers with
+`confirm_intake.py`; do not treat chat history as confirmation. The Harness validates and stores the
+result but does not make semantic framework-selection decisions for the consultant.

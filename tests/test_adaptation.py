@@ -1,5 +1,7 @@
 """M5 standard adaptation tests mapped to FR-13 and AC-09."""
 
+import hashlib
+import json
 import zipfile
 from pathlib import Path
 
@@ -18,7 +20,7 @@ from report_harness.adaptation import (
 from report_harness.drafting import finalize_draft
 from report_harness.errors import HarnessError
 from report_harness.exporting import approve_export, export_project, validate_export_manifest
-from report_harness.io import read_jsonl, read_yaml, write_json, write_yaml
+from report_harness.io import read_json, read_jsonl, read_yaml, write_json, write_yaml
 from report_harness.project import validate_project
 from report_harness.workflow import WorkflowStore
 
@@ -166,6 +168,43 @@ def test_each_configured_target_can_be_built_before_other_targets(tmp_path: Path
     _accept_all(project)
     finalized = finalize_adaptation(project, TARGET, reviewed_by="consultant")
     assert finalized["workflow_state"] == "adapting_standard"
+
+
+def test_building_another_target_refreshes_existing_snapshot_hash(tmp_path: Path):
+    project = _prepare_adaptation_project(tmp_path)
+    config_path = project / "project.yaml"
+    config = read_yaml(config_path)
+    config["deliverables"]["adaptations"].append("simulated-standard-b")
+    write_yaml(config_path, config)
+    _build(project, tmp_path)
+
+    proposal = _proposal(project)
+    proposal["target_standard_id"] = "simulated-standard-b"
+    for item in proposal["items"]:
+        item["adaptation_id"] = item["adaptation_id"].replace("ADAPT-A-", "ADAPT-B-")
+        if item["action"] == "omit":
+            item["action"] = "keep"
+            item["target_section_id"] = next(
+                content["section_id"]
+                for row in read_jsonl(project / "state/disclosure_ledger.jsonl")
+                for content in row["content"]
+                if content["content_id"] == item["source_content_id"]
+            )
+        if item["action"] == "condense":
+            item["action"] = "keep"
+            item["adapted_text"] = None
+    proposal_path = tmp_path / "adaptation-b.json"
+    write_json(proposal_path, proposal)
+    build_adaptation(project, proposal_path)
+
+    ledger = read_jsonl(project / "state/disclosure_ledger.jsonl")
+    expected_hash = hashlib.sha256(
+        json.dumps(ledger, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    first_snapshot = read_json(project / f"drafts/adaptations/{TARGET}.json")
+
+    assert first_snapshot["source_ledger_hash"] == expected_hash
+    assert validate_project(project) == []
 
 
 def test_reviewed_adaptation_enters_clean_export_and_manifest(tmp_path: Path):

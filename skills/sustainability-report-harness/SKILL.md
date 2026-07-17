@@ -1,159 +1,108 @@
 ---
 name: sustainability-report-harness
-description: Create, validate, inspect, resume, draft, assess, and export local multi-standard sustainability or climate disclosure report projects with persistent Checkpoints and a traceable disclosure ledger. Use when Codex must start or continue an ESG reporting project, confirm project data boundaries and specifications, ingest evidence, build and review a requirement union or formal outline, generate an Anchor and master draft, export internal Word/Excel review files, or enforce clean-export gates without inventing regulatory content.
+description: Build or continue a local, traceable Chinese sustainability or climate report project from client DOCX/PDF/XLSX materials and consultant-reviewed standard packages. Use when an Agent must ask for report inputs, ingest evidence, map multiple frameworks, draft a union master, create one Markdown adaptation per framework, preserve human checkpoints, or hand the same project to another Agent without inventing regulatory content.
 ---
 
 # Sustainability Report Harness
 
-Operate a local, traceable disclosure project. Keep deterministic state in the project directory and never treat the conversation as the source of truth.
+Use the project directory—not chat history—as the source of truth. Keep all customer material local unless the user explicitly approves otherwise.
 
-## Establish the operating mode
+## Start with mandatory questions
 
-1. Detect whether local Python scripts can run and whether project policy permits required model or web use.
-2. State one mode before processing customer content:
-   - `Full`: local scripts and permitted model capabilities are available.
-   - `Local Restricted`: customer text cannot leave the local boundary; degrade semantic work explicitly.
-   - `Advisor`: scripts cannot run; provide instructions only and do not claim verified artifacts.
-3. Obtain project-specific data consent. Never infer consent from a different project or past conversation.
+Before drafting, ask for and confirm:
 
-## Locate the deterministic commands
+1. client materials;
+2. an existing report or client template, or an explicit statement that none exists;
+3. the reporting frameworks selected by the consultant;
+4. excellent/reference reports, or an explicit decision not to provide them;
+5. report purpose, audience, tone, and required topics;
+6. project-specific data-processing consent.
 
-Resolve paths relative to this `SKILL.md`. Use scripts in `scripts/`:
+Reference reports are optional. Client materials and at least one target framework are required. If references are provided, ask whether they are for `style_reference`, `quality_benchmark`, or `both`. Never use peer material as client evidence.
 
-- `scaffold_project.py`: create a project without overwriting existing content.
-- `standards.py`: recommend and immutably lock user-confirmed standard packages.
-- `ingest_sources.py`: parse local DOCX, text PDF, and XLSX files into reusable evidence.
-- `review_ocr.py`: persist the user's decision for every scanned-PDF fallback without silently
-  invoking an external service.
-- `build_requirement_union.py`: validate a mapping plan and build the complete ledger union.
-- `review_requirement_union.py`: persist human decisions for mappings, evidence, conflicts, and gaps.
-- `build_outline.py` / `review_outline.py`: build and approve the formal, complete outline and its
-  selected Anchor section.
-- `build_draft.py` / `review_draft.py`: write Anchor/master proposals into the ledger and persist
-  item-level human decisions.
-- `build_adaptation.py` / `review_adaptation.py`: derive a locked-standard version from master
-  content IDs and persist item-level human decisions.
-- `export_project.py`: generate the internal DOCX/XLSX review package or a gate-approved clean DOCX.
-- `review_export.py`: validate the current internal package and approve the Export Checkpoint.
-- `validate_project.py`: validate directories, configuration, workflow, and ledger.
-- `workflow.py`: read state, update Checkpoints, and perform allowed transitions.
-- `validate_ledger.py`: validate models, stable IDs, and references.
-- `preflight_export.py`: block unsafe clean export.
+Read [INTAKE-PROTOCOL.md](references/INTAKE-PROTOCOL.md), place files in the scaffolded source directories, and persist the confirmed answers with `confirm_intake.py`. Do not approve `project_spec` through the generic workflow command.
 
-Treat a nonzero exit code as a failed gate. Present the structured error and fix the cause before retrying.
+## Use the deterministic commands
 
-## Start or resume a project
+Resolve all paths relative to this file. Treat a nonzero exit code as a failed gate.
 
-### Create
+- `scripts/scaffold_project.py`: create a non-overwriting project scaffold.
+- `scripts/confirm_intake.py`: persist confirmed materials, frameworks, references, and preferences.
+- `scripts/standards.py`: recommend and lock consultant-reviewed standard packages.
+- `scripts/ingest_sources.py`: parse local DOCX, text PDF, and XLSX into reusable evidence.
+- `scripts/review_ocr.py`: record the user's scanned-PDF fallback decision.
+- `scripts/build_requirement_union.py` / `review_requirement_union.py`: build and review the complete requirement union.
+- `scripts/build_outline.py` / `review_outline.py`: build and approve the formal outline and Anchor.
+- `scripts/build_draft.py` / `review_draft.py`: build and review Anchor and master proposals.
+- `scripts/build_adaptation.py` / `review_adaptation.py`: derive framework-specific proposals from master content IDs.
+- `scripts/export_markdown.py`: generate and validate the Markdown master, per-framework drafts, and hash manifest.
+- `scripts/handoff_project.py`: create or validate a cross-Agent integrity snapshot.
+- `scripts/trial_metrics.py`: record trial effort and correction metrics.
+- `scripts/validate_project.py`: validate the complete project.
+- `scripts/workflow.py`: inspect state and update only the generic data-consent gate.
 
-Confirm the client, reporting period, project name, and local destination. Then run:
+Word/Excel export commands remain available as legacy internal review outputs. Do not expand or present them as the default MVP delivery.
+
+## Follow the gated workflow
+
+1. Scaffold the project and confirm data consent.
+2. Ask the mandatory questions and persist `state/intake.json`.
+3. Lock exactly the frameworks confirmed in intake. Never silently select or upgrade a standard.
+4. Ingest customer and optional peer sources.
+5. Build the full requirement union; stop for mapping, evidence, conflict, and gap review.
+6. Build and confirm the formal outline.
+7. Build one representative Anchor; stop for review.
+8. Build and approve the full union master.
+9. Build a complete adaptation proposal for every confirmed framework.
+10. Generate the Markdown delivery and validate its manifest.
+11. Create or refresh the handoff before another Agent continues.
+
+Never bypass a Checkpoint. Record only decisions the user or named reviewer actually made.
+
+## Handle OCR as a user decision
+
+For a scanned PDF, inspect which local options are available, such as PaddleOCR or Tesseract, and explain how each could be used. If no suitable local tool exists, offer authorized cloud OCR, a searchable replacement file, manual transcription, pause, or an explicit noncritical gap. Let the user decide and record that decision with `review_ocr.py`. Do not install, invoke, or upload to an OCR service without permission.
+
+Read [EVIDENCE-PROTOCOL.md](references/EVIDENCE-PROTOCOL.md) for evidence and OCR rules.
+
+## Separate deterministic and semantic work
+
+Scripts validate paths, hashes, IDs, schemas, coverage, references, workflow state, and output integrity. The Agent proposes semantic mapping, evidence relevance, outlines, report prose, assessments, and adaptations. Every new semantic judgment starts `unreviewed`.
+
+Use these references only for the active stage:
+
+- Evidence and OCR: [EVIDENCE-PROTOCOL.md](references/EVIDENCE-PROTOCOL.md)
+- Standards and mapping: [MAPPING-PROTOCOL.md](references/MAPPING-PROTOCOL.md)
+- Outline: [OUTLINE-FORMAT.md](references/OUTLINE-FORMAT.md)
+- Anchor/master drafting: [DRAFTING-PROTOCOL.md](references/DRAFTING-PROTOCOL.md)
+- Response and peer assessment: [ASSESSMENT-PROTOCOL.md](references/ASSESSMENT-PROTOCOL.md)
+- Framework adaptation: [ADAPTATION-PROTOCOL.md](references/ADAPTATION-PROTOCOL.md)
+- Markdown delivery: [MARKDOWN-OUTPUT.md](references/MARKDOWN-OUTPUT.md)
+- Cross-Agent continuation: [HANDOFF-PROTOCOL.md](references/HANDOFF-PROTOCOL.md) and [AGENT-COMPATIBILITY.md](references/AGENT-COMPATIBILITY.md)
+- Final checks: [QA-CHECKLISTS.md](references/QA-CHECKLISTS.md)
+
+## Preserve truth boundaries
+
+- Use only imported, reviewed packages for real regulatory text. Fixtures are never official.
+- Require client evidence for `confirmed_fact`.
+- Mark `inference`, `suggested_text`, and `information_gap` explicitly.
+- Preserve human edits and accepted review decisions.
+- Do not remove framework-specific requirements during union mapping or adaptation.
+- Keep `state/disclosure_ledger.jsonl` as the only business truth source.
+- Derive every Markdown, Word, Excel, JSON snapshot, and manifest from current project state.
+
+## Deliver Markdown first
+
+After the master is approved and every confirmed framework has a complete adaptation proposal, run `export_markdown.py generate`. The expected files are:
 
 ```text
-python scripts/scaffold_project.py <project-dir> \
-  --project-id <stable-id> \
-  --project-name <name> \
-  --client-name <client> \
-  --period-start YYYY-MM-DD \
-  --period-end YYYY-MM-DD
+outputs/markdown/master_report.md
+outputs/markdown/adapted_<standard-id>.md
+outputs/markdown/report_manifest.json
 ```
 
-The scaffold defaults cloud processing and web search to false, requires anonymization, and leaves standards unselected. Update these only from explicit user confirmation.
-
-### Lock standards
-
-Use `standards.py recommend` to show versions applicable to the reporting period. Let the
-consultant choose, then run `standards.py lock` with a named confirmer. Never lock a simulated
-package without the explicit development-only flag, and never relabel it as official.
-
-### Ingest evidence
-
-After data consent, project specification, and standards Checkpoints are approved, place local
-files under `sources/client/` or `sources/peer/`. Then run:
-
-```text
-python scripts/ingest_sources.py <project-dir>
-```
-
-Reuse unchanged files by SHA-256 and parser version. Write source status to
-`state/source_manifest.jsonl` and traceable records to `state/evidence.jsonl`. Use `--force` only
-when the user explicitly wants a supported source reparsed. Treat `needs_ocr`, parse errors, and an
-empty supported-source set as blockers; do not claim that image-only PDFs were parsed.
-
-For `needs_ocr`, inspect available local tools and present the supported choices. Read
-[EVIDENCE-PROTOCOL.md](references/EVIDENCE-PROTOCOL.md), then record only the user's choice with
-`review_ocr.py`. Never infer permission to use cloud OCR. Only an explicitly noncritical source may
-be skipped as a gap.
-
-### Build and review the requirement union
-
-Read [MAPPING-PROTOCOL.md](references/MAPPING-PROTOCOL.md). Create a mapping plan from the locked
-clauses and requirements. Mark every Agent-produced mapping and evidence link `unreviewed`; do not
-encode semantic judgment in deterministic scripts. Run `build_requirement_union.py`, then stop at
-the Evidence Checkpoint.
-
-Use `review_requirement_union.py` only to record decisions the user actually made. Require a named
-reviewer for mappings, evidence relationships, contradicting evidence, and uncovered requirements.
-Run `finalize` only after every item is accepted or edited and every gap has confirmed criticality.
-
-### Build, review, adapt, and export report artifacts
-
-Read [OUTLINE-FORMAT.md](references/OUTLINE-FORMAT.md). Validate an Agent-created outline proposal
-with `build_outline.py` and stop for `review_outline.py`. After approval, generate only the selected
-Anchor using `build_draft.py`; record every content and assessment decision with `review_draft.py`
-and finalize the Anchor before creating the remaining master sections.
-
-After Master approval, read [ADAPTATION-PROTOCOL.md](references/ADAPTATION-PROTOCOL.md) for every
-standard listed in `deliverables.adaptations`. Build a complete proposal with
-`build_adaptation.py`, export the internal DOCX/XLSX for review, record every action through
-`review_adaptation.py`, and finalize all configured targets.
-
-After master review, read [EXPORT-PROTOCOL.md](references/EXPORT-PROTOCOL.md) and run
-`export_project.py <project-dir> internal`. Treat Word and Excel as derived review files. Run clean
-export only after `review_export.py` approves the current internal artifacts and preflight.
-
-### Resume
-
-Run `python scripts/workflow.py <project-dir> status`, inspect `project.yaml`, and read only the references needed for the current state. Preserve human-authored content and existing confirmed values.
-
-## Follow the hard-gated workflow
-
-1. Confirm data consent.
-2. Confirm the project specification and user-selected standard versions.
-3. Build evidence and the requirement union.
-4. Confirm evidence gaps, mappings, and conflicts.
-5. Generate and confirm the formal outline.
-6. Generate one representative Anchor section and confirm it.
-7. Generate and review the complete master draft.
-8. Adapt from the master and pass export preflight.
-
-M5.1 implements the M4 foundation plus ledger-linked standard adaptations, difference workbooks,
-and internal/clean adaptation DOCX export. It does not execute OCR engines, supply official
-standards, provide the second Agent adapter, or produce trial metrics. Treat every semantic mapping,
-drafted block, assessment, and adaptation action as a proposal until a qualified reviewer approves
-it.
-
-## Load stage references only when needed
-
-- Project setup or specification: read [PROJECT-BRIEF.md](references/PROJECT-BRIEF.md).
-- Evidence work: read [EVIDENCE-PROTOCOL.md](references/EVIDENCE-PROTOCOL.md).
-- Standards or mapping work: read [MAPPING-PROTOCOL.md](references/MAPPING-PROTOCOL.md).
-- Formal outline work: read [OUTLINE-FORMAT.md](references/OUTLINE-FORMAT.md).
-- Anchor or master drafting: read [DRAFTING-PROTOCOL.md](references/DRAFTING-PROTOCOL.md).
-- Response assessment: read [ASSESSMENT-PROTOCOL.md](references/ASSESSMENT-PROTOCOL.md).
-- Internal or clean export: read [EXPORT-PROTOCOL.md](references/EXPORT-PROTOCOL.md).
-- Standard adaptation: read [ADAPTATION-PROTOCOL.md](references/ADAPTATION-PROTOCOL.md).
-- Any gate or final validation: read [QA-CHECKLISTS.md](references/QA-CHECKLISTS.md).
-
-## Preserve truth and review boundaries
-
-- Let the consultant choose applicable standards; only recommend versions by reporting period.
-- Never label simulated or unreviewed rules as official.
-- Keep peer material out of the customer evidence classification.
-- Require client evidence for confirmed facts.
-- Mark inference, suggested text, and information gaps explicitly.
-- Never silently upgrade standards, remove requirements, overwrite human edits, or bypass a Checkpoint.
-- Derive Word, Excel, and adaptations from `state/disclosure_ledger.jsonl`; do not create independent business judgments in exports.
+Retain `[待确认-推断]`, `[建议文本]`, and `[信息缺口]`. Keep content and evidence IDs in HTML comments. Run `export_markdown.py validate` after any edit; regenerate if inputs or output hashes are stale.
 
 ## Apply the quality loop
 
-For every supported stage, perform: generate → validate → repair → revalidate → report. Run `validate_project.py` after project changes and `validate_ledger.py` after ledger changes. Before any clean export, run `preflight_export.py` and stop on every listed blocker.
+For every stage perform: generate → validate → repair → revalidate → report. Run the project validator after state changes. Do not claim completion while any required input, framework adaptation, hash, Checkpoint, or professional review is missing.

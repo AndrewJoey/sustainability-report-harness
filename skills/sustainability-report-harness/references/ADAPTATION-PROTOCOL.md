@@ -13,6 +13,7 @@ Use this protocol only after the master Checkpoint is approved.
 - Do not create an unlinked copy of a customer fact or use peer evidence as supplemental evidence.
 - Re-run ledger and export checks after adaptation.
 
-Generate the internal adaptation DOCX and difference XLSX before finalization. After every action is
-accepted or edited, finalize the target, regenerate the internal package, and pass Export review
-before generating the clean adaptation DOCX.
+After every confirmed framework has a complete proposal, generate the Markdown master and
+framework drafts; these internal drafts may retain unreviewed adaptation actions and risk labels.
+Human review remains required before any clean external output. The legacy internal DOCX and
+difference XLSX may still be generated when the consultant needs them.

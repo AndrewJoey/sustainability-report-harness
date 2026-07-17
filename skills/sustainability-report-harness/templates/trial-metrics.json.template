@@ -1,0 +1,19 @@
+{
+  "trial_id": "TRIAL-001",
+  "scope": "端到端模拟项目",
+  "baseline_minutes": 0,
+  "agent_runtime_minutes": 0,
+  "human_review_minutes": 0,
+  "repeat_parse_count": 0,
+  "repeat_write_count": 0,
+  "mapping_correction_count": 0,
+  "evidence_location_error_count": 0,
+  "content_total": 0,
+  "content_kept": 0,
+  "content_modified": 0,
+  "content_rewritten": 0,
+  "selected_requirements_total": 0,
+  "selected_requirements_covered": 0,
+  "cross_agent_reprocessed_files": 0,
+  "notes": null
+}

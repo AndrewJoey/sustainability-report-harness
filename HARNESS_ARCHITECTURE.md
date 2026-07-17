@@ -47,6 +47,7 @@ report-agent/
 │       │   └── QA-CHECKLISTS.md
 │       ├── scripts/
 │       │   ├── scaffold_project.py
+│       │   ├── confirm_intake.py
 │       │   ├── standards.py
 │       │   ├── ingest_sources.py
 │       │   ├── build_requirement_union.py
@@ -56,6 +57,7 @@ report-agent/
 │       │   ├── review_outline.py
 │       │   ├── build_draft.py
 │       │   ├── review_draft.py
+│       │   ├── export_markdown.py
 │       │   ├── export_project.py
 │       │   ├── validate_project.py
 │       │   ├── validate_ledger.py
@@ -80,6 +82,7 @@ client-project/
 │   └── requirements/
 ├── state/
 │   ├── workflow.json
+│   ├── intake.json                     # 对话确认后的材料、框架、案例和偏好
 │   ├── standards.lock.json           # 锁定准则后生成
 │   ├── source_manifest.jsonl
 │   ├── ocr_decisions.jsonl          # 用户选择的扫描 PDF 兜底方案
@@ -87,17 +90,23 @@ client-project/
 │   ├── requirement_union.json        # 构建并集后生成
 │   ├── disclosure_ledger.jsonl    # 唯一真相源
 │   ├── outline.json
-│   └── outline.md
+│   ├── outline.md
+│   └── handoff.json               # 可选的跨 Agent 完整性快照
 ├── drafts/
 │   ├── master/
 │   └── adaptations/
 ├── outputs/
+│   ├── markdown/                       # MVP 主交付及哈希清单
 │   ├── internal/
 │   └── clean/
 └── logs/
+    ├── harness.jsonl
+    ├── trial_metrics.jsonl
+    ├── trial_summary.json
+    └── trial_summary.md
 ```
 
-`disclosure_ledger.jsonl` 中每个披露单元必须关联统一披露要求、原始准则条款、证据、正文内容、内容状态、回应状态、置信度和人工审阅状态。Word、Excel 和适配稿均由该账本派生，不得各自维护独立判断。
+`disclosure_ledger.jsonl` 中每个披露单元必须关联统一披露要求、原始准则条款、证据、正文内容、内容状态、回应状态、置信度和人工审阅状态。Markdown 主交付以及可选 Word、Excel 派生文件均由该账本生成，不得各自维护独立判断。
 
 ## 5. 固定工作流
 
@@ -110,7 +119,8 @@ client-project/
 
 ### Phase 1：确认项目规格与准则版本
 
-- 读取用户说明、任务书、客户模板和参考报告；
+- 主动询问客户材料、既有报告或模板、顾问指定准则、优秀案例和报告偏好；优秀案例允许明确不提供；
+- 将确认结果写入 `state/intake.json`，而不是只留在对话里；
 - 生成并确认 `brief.md`；
 - 顾问指定准则，系统推荐版本并等待顾问确认；
 - 可生成候选 `outline.md`，但不得作为正式目录或进入母版生成；
@@ -149,8 +159,9 @@ client-project/
 ### Phase 5：适配与导出
 
 - 按目标准则从母版派生适配稿；
-- 执行 Word、Excel 和账本一致性检查；
-- 内部 DOCX/XLSX 和干净版均由当前账本派生，`export_manifest.json` 绑定账本与文件哈希；
+- 默认生成 `master_report.md` 和每个已确认准则的 `adapted_<standard_id>.md`；
+- `report_manifest.json` 绑定 intake、准则锁、账本、目录、配置和全部 Markdown 文件哈希；
+- 现有内部 DOCX/XLSX 和干净版仍可使用，但不再作为 Markdown-first MVP 的主交付或扩展方向；
 - **Checkpoint Export**：处理未确认内容后生成干净版。
 
 ## 6. 强制质量协议
@@ -190,6 +201,21 @@ Agent 必须在开始时说明模式，不得静默切换。
 - 正式目录、Anchor-first 母版和逐项人工审阅；
 - 准则回应与同行最佳实践独立评价；
 - 内部 DOCX/XLSX、导出清单和干净版门禁。
+
+### M5.2 通用基础交付
+
+- `state/handoff.json` 只保存当前公共契约、来源指纹、工作流和 Checkpoint 的完整性快照；
+- 接收方在独立进程中校验同一项目目录，继续读取账本并复用未变化文件；
+- `logs/trial_metrics.jsonl` 追加保存人工基线、Agent 时间、人工修正、错误、内容保留、覆盖率和跨 Agent 重复处理；
+- JSON/Markdown 试用汇总绑定源记录哈希，同时报告节省时间和人工纠错；
+- 通用契约不等于产品特定 Agent 已实测；真实 AC-11 留作 MVP 外的采用验证。
+
+### M5.3 Markdown-first MVP 交付
+
+- 对话 intake 将客户材料、既有报告或模板、目标准则、优秀案例选择和报告偏好持久化；
+- 一次生成一份联合母版和每个已确认准则各一份 Markdown 适配稿；
+- 三类风险标记、内容 ID、证据 ID 和输入/输出哈希均可验证；
+- Codex、Claude Code、WorkBuddy、Trae 共用同一 Skill 和项目契约；MVP 验证通用契约和独立进程接续，不执行产品特定外部实测。
 
 ## 9. 明确不借鉴
 

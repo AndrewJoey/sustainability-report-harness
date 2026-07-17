@@ -85,7 +85,7 @@ def build_adaptation(
             details={"errors": errors},
         )
     write_jsonl(project_dir / LEDGER_PATH, merged)
-    _write_snapshot(project_dir, target_standard_id, merged)
+    _write_all_snapshots(project_dir, merged)
     if workflow["workflow_state"] == "awaiting_export_confirmation":
         store.transition("adapting_standard")
     append_event(
@@ -171,7 +171,7 @@ def review_adaptation_item(
             details={"errors": errors},
         )
     write_jsonl(project_dir / LEDGER_PATH, ledger)
-    _write_snapshot(project_dir, target_standard_id, ledger)
+    _write_all_snapshots(project_dir, ledger)
     append_event(
         project_dir,
         project_id=str(load_project_config(project_dir)["project_id"]),
@@ -385,6 +385,46 @@ def validate_project_adaptations(
     return errors
 
 
+def validate_adaptation_snapshots(
+    project_dir: Path,
+    *,
+    ledger: list[dict[str, Any]] | None = None,
+) -> list[str]:
+    """Ensure derived adaptation snapshots match the current ledger exactly."""
+
+    project_dir = project_dir.resolve()
+    ledger = ledger if ledger is not None else read_jsonl(project_dir / LEDGER_PATH)
+    current_hash = _json_hash(ledger)
+    errors: list[str] = []
+    targets = sorted(
+        {
+            str(item.get("target_standard_id"))
+            for row in ledger
+            for item in row.get("adaptations", [])
+        }
+    )
+    for target_standard_id in targets:
+        snapshot_path = project_dir / _snapshot_path(target_standard_id)
+        if not snapshot_path.is_file():
+            errors.append(f"{snapshot_path.relative_to(project_dir)}: snapshot is missing")
+            continue
+        try:
+            snapshot = read_json(snapshot_path)
+        except HarnessError as exc:
+            errors.append(str(exc))
+            continue
+        prefix = snapshot_path.relative_to(project_dir).as_posix()
+        if snapshot.get("schema_version") != "1.0.0":
+            errors.append(f"{prefix}.schema_version: must be 1.0.0")
+        if snapshot.get("target_standard_id") != target_standard_id:
+            errors.append(f"{prefix}.target_standard_id: does not match the filename target")
+        if snapshot.get("source_ledger_hash") != current_hash:
+            errors.append(f"{prefix}.source_ledger_hash: snapshot is stale")
+        if snapshot.get("items") != _target_items(ledger, target_standard_id):
+            errors.append(f"{prefix}.items: does not match current ledger adaptations")
+    return errors
+
+
 def adaptation_preflight(project_dir: Path, ledger: list[dict[str, Any]]) -> list[dict[str, str]]:
     """Return clean-export blockers for configured standard adaptations."""
 
@@ -476,6 +516,25 @@ def write_adaptation_outputs(
             )
             files.append(diff)
     return files
+
+
+def adapted_view(
+    project_dir: Path,
+    target_standard_id: str,
+    ledger: list[dict[str, Any]],
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Return a validated, derived framework-specific view of the master ledger."""
+
+    errors = validate_project_adaptations(
+        project_dir.resolve(), ledger=ledger, require_complete=True
+    )
+    if errors:
+        raise HarnessError(
+            "INVALID_ADAPTATION",
+            "Framework-specific Markdown requires complete adaptation proposals",
+            details={"errors": errors},
+        )
+    return _adapted_view(project_dir.resolve(), target_standard_id, ledger)
 
 
 def expected_adaptation_files(project_dir: Path, mode: str) -> set[str]:
@@ -741,6 +800,20 @@ def _write_snapshot(
             "items": items,
         },
     )
+
+
+def _write_all_snapshots(project_dir: Path, ledger: list[dict[str, Any]]) -> None:
+    """Refresh every derived target snapshot after any adaptation ledger mutation."""
+
+    targets = sorted(
+        {
+            str(item.get("target_standard_id"))
+            for row in ledger
+            for item in row.get("adaptations", [])
+        }
+    )
+    for target_standard_id in targets:
+        _write_snapshot(project_dir, target_standard_id, ledger)
 
 
 def _json_hash(value: Any) -> str:

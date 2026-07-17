@@ -241,6 +241,22 @@ def lock_standard_versions(
             "MULTIPLE_VERSIONS_SELECTED",
             "A project can lock only one version of each standard",
         )
+    intake_path = project_dir / "state" / "intake.json"
+    if intake_path.is_file():
+        from .intake import require_confirmed_intake
+
+        intake = require_confirmed_intake(project_dir)
+        requested_ids = set(intake["requested_standard_ids"])
+        locked_ids = set(standard_ids)
+        if locked_ids != requested_ids:
+            raise HarnessError(
+                "STANDARD_SELECTION_MISMATCH",
+                "Locked standards must exactly match the frameworks confirmed during intake",
+                details={
+                    "requested_standard_ids": sorted(requested_ids),
+                    "locked_standard_ids": sorted(locked_ids),
+                },
+            )
 
     lock = {
         "schema_version": "1.0.0",
@@ -259,6 +275,8 @@ def lock_standard_versions(
         }
         for standard_id, version_id in pairs
     ]
+    if intake_path.is_file():
+        config["deliverables"]["adaptations"] = standard_ids
     write_yaml(project_dir / "project.yaml", config)
     store.set_checkpoint(
         "standards",
@@ -329,4 +347,15 @@ def validate_project_standard_lock(project_dir: Path) -> list[str]:
     }
     if locked_pairs != configured_pairs:
         errors.append(f"{LOCK_PATH}: locked versions do not match project.yaml")
+    intake_path = project_dir / "state" / "intake.json"
+    if intake_path.is_file():
+        try:
+            intake = read_json(intake_path)
+        except HarnessError as exc:
+            errors.append(str(exc))
+        else:
+            requested_ids = set(intake.get("requested_standard_ids", []))
+            locked_ids = {pair[0] for pair in locked_pairs}
+            if requested_ids != locked_ids:
+                errors.append(f"{LOCK_PATH}: locked standards do not match confirmed intake")
     return errors

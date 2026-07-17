@@ -1,4 +1,4 @@
 interface:
   display_name: "可持续披露报告 Harness"
-  short_description: "构建多准则母版、评价矩阵和准则适配审阅文件"
-  default_prompt: "Use $sustainability-report-harness to resume a local disclosure project, follow its human review gates, and build the next validated outline, draft, assessment, adaptation, or export artifact."
+  short_description: "从客户资料生成母版和逐准则 Markdown 初版"
+  default_prompt: "Use $sustainability-report-harness to ask for and confirm the required report inputs, preserve project state and human decisions, then build or resume the traceable union master and one Markdown adaptation per confirmed framework."

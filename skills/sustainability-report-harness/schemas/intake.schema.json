@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/sustainability-report-harness/intake.schema.json",
+  "title": "Conversational report-project intake",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "confirmed_at",
+    "confirmed_by",
+    "client_materials",
+    "existing_report_or_template",
+    "reference_cases",
+    "requested_standard_ids",
+    "reporting_preferences"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "confirmed_at": {"type": "string", "minLength": 1},
+    "confirmed_by": {"type": "string", "minLength": 1},
+    "client_materials": {"$ref": "#/$defs/requiredFiles"},
+    "existing_report_or_template": {"$ref": "#/$defs/optionalFiles"},
+    "reference_cases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "files", "usage"],
+      "properties": {
+        "status": {"enum": ["provided", "none"]},
+        "files": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "usage": {"enum": ["style_reference", "quality_benchmark", "both", "none"]}
+      }
+    },
+    "requested_standard_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "reporting_preferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose", "audience", "tone", "required_topics"],
+      "properties": {
+        "purpose": {"type": "string", "minLength": 1},
+        "audience": {"type": "string", "minLength": 1},
+        "tone": {"type": "string", "minLength": 1},
+        "required_topics": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  },
+  "$defs": {
+    "requiredFiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["files"],
+      "properties": {
+        "files": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}
+      }
+    },
+    "optionalFiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "files"],
+      "properties": {
+        "status": {"enum": ["provided", "none"]},
+        "files": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+      }
+    }
+  }
+}

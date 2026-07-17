@@ -6,18 +6,22 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .adaptation import validate_project_adaptations
+from .adaptation import validate_adaptation_snapshots, validate_project_adaptations
 from .audit import append_event
 from .config import load_project_config, validate_project_config
 from .errors import HarnessError
 from .exporting import validate_export_manifest
+from .handoff import validate_handoff
 from .ingestion import validate_evidence_file, validate_source_manifest
+from .intake import validate_project_intake
 from .io import atomic_write_text, read_jsonl, write_yaml
 from .ledger import validate_ledger_file
 from .mapping import validate_union_completeness
+from .markdown_export import validate_markdown_manifest
 from .ocr import validate_ocr_decisions
 from .outline import validate_outline
 from .standards import validate_project_standard_lock
+from .trial import validate_trial_metrics
 from .workflow import WorkflowStore, validate_workflow
 
 PROJECT_DIRECTORIES = (
@@ -95,6 +99,7 @@ def scaffold_project(project_dir: Path, config: dict[str, Any]) -> None:
     project_dir.mkdir(parents=True, exist_ok=True)
     for relative in PROJECT_DIRECTORIES:
         (project_dir / relative).mkdir(parents=True, exist_ok=True)
+    (project_dir / "outputs/markdown").mkdir(parents=True, exist_ok=True)
     write_yaml(project_dir / "project.yaml", config)
     atomic_write_text(
         project_dir / "brief.md",
@@ -111,6 +116,7 @@ def scaffold_project(project_dir: Path, config: dict[str, Any]) -> None:
         "disclosure_ledger.jsonl",
     ):
         atomic_write_text(project_dir / "state" / filename, "")
+    atomic_write_text(project_dir / "logs" / "trial_metrics.jsonl", "")
     WorkflowStore(project_dir).initialize()
     append_event(
         project_dir,
@@ -120,7 +126,7 @@ def scaffold_project(project_dir: Path, config: dict[str, Any]) -> None:
     )
 
 
-def validate_project(project_dir: Path) -> list[str]:
+def validate_project(project_dir: Path, *, include_handoff: bool = True) -> list[str]:
     errors: list[str] = []
     for relative in PROJECT_DIRECTORIES:
         if not (project_dir / relative).is_dir():
@@ -133,6 +139,7 @@ def validate_project(project_dir: Path) -> list[str]:
             errors.extend(validate_project_config(load_project_config(project_dir)))
         except HarnessError as exc:
             errors.append(str(exc))
+    errors.extend(validate_project_intake(project_dir))
     if (project_dir / "state" / "workflow.json").is_file():
         try:
             workflow = json.loads(
@@ -182,9 +189,15 @@ def validate_project(project_dir: Path) -> list[str]:
             errors.append(f"state/outline.json: {exc}")
     if ledger.is_file():
         try:
-            errors.extend(validate_project_adaptations(project_dir))
+            ledger_records = read_jsonl(ledger)
+            errors.extend(validate_project_adaptations(project_dir, ledger=ledger_records))
+            errors.extend(validate_adaptation_snapshots(project_dir, ledger=ledger_records))
         except HarnessError as exc:
             errors.append(str(exc))
     errors.extend(validate_export_manifest(project_dir, "internal"))
     errors.extend(validate_export_manifest(project_dir, "clean"))
+    errors.extend(validate_markdown_manifest(project_dir))
+    errors.extend(validate_trial_metrics(project_dir))
+    if include_handoff:
+        errors.extend(validate_handoff(project_dir))
     return errors

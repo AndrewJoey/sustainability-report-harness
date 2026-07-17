@@ -38,10 +38,10 @@ def main() -> int:
         if args.command == "transition":
             return store.transition(args.state)
         if args.command == "checkpoint":
-            if args.name not in {"data_consent", "project_spec"}:
+            if args.name != "data_consent":
                 raise HarnessError(
                     "DOMAIN_REVIEW_REQUIRED",
-                    f"Checkpoint {args.name} must be updated by its stage-specific review command",
+                    f"Checkpoint {args.name} must be updated by its stage-specific command",
                     args.name,
                 )
             return store.set_checkpoint(

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/sustainability-report-harness/handoff.schema.json",
+  "title": "Cross-Agent project handoff",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "project_id",
+    "produced_by",
+    "workflow_state",
+    "checkpoints",
+    "contracts",
+    "sources",
+    "continuation"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "produced_by": {"type": "string", "minLength": 1},
+    "workflow_state": {"type": "string", "minLength": 1},
+    "checkpoints": {"type": "object"},
+    "contracts": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_file",
+          "manifest_source_hash",
+          "current_file_hash",
+          "parser_version",
+          "status",
+          "evidence_ids"
+        ],
+        "properties": {
+          "source_file": {"type": "string"},
+          "manifest_source_hash": {"type": ["string", "null"]},
+          "current_file_hash": {"type": ["string", "null"]},
+          "parser_version": {"type": ["string", "null"]},
+          "status": {"type": "string"},
+          "evidence_ids": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "continuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "truth_source",
+        "preserve_human_edits",
+        "reparse_unchanged_sources",
+        "next_action"
+      ],
+      "properties": {
+        "truth_source": {"const": "state/disclosure_ledger.jsonl"},
+        "preserve_human_edits": {"const": true},
+        "reparse_unchanged_sources": {"const": false},
+        "next_action": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

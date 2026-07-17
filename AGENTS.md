@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository has completed its M5.1 ledger-linked standard-adaptation milestone. Read these files before changing behavior:
+This repository has implemented its M5.3 Markdown-first intake and delivery contract on top of M5.2 handoff/trial foundations. Product-specific Claude Code validation was removed from the MVP by user decision; portability is now verified through the generic Skill and state contracts. Read these files before changing behavior:
 
 - `PROJECT_PLAN.md`: status, milestones, dependencies, and handoff instructions.
 - `HARNESS_ARCHITECTURE.md`: Garden-inspired Harness structure and stability protocol.

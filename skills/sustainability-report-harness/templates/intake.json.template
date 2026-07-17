@@ -1,0 +1,21 @@
+{
+  "client_materials": {
+    "files": ["sources/client/client-material.docx"]
+  },
+  "existing_report_or_template": {
+    "status": "none",
+    "files": []
+  },
+  "reference_cases": {
+    "status": "none",
+    "files": [],
+    "usage": "none"
+  },
+  "requested_standard_ids": ["reviewed-standard-id"],
+  "reporting_preferences": {
+    "purpose": "内部专业审阅",
+    "audience": "可持续发展报告顾问",
+    "tone": "专业、清晰、审慎",
+    "required_topics": []
+  }
+}

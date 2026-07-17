@@ -32,11 +32,12 @@ def build_manifest(skill_dir: Path) -> dict[str, Any]:
     files = calculate_file_hashes(skill_dir)
     return {
         "name": "sustainability-report-harness",
-        "version": "0.5.0",
-        "maturity": "m5.1",
+        "version": "0.6.0",
+        "maturity": "m5.3-markdown-mvp",
         "schema_version": "1.0.0",
         "entrypoints": {
             "scaffold": "scripts/scaffold_project.py",
+            "intake_confirmation": "scripts/confirm_intake.py",
             "source_ingestion": "scripts/ingest_sources.py",
             "ocr_review": "scripts/review_ocr.py",
             "standards": "scripts/standards.py",
@@ -48,6 +49,9 @@ def build_manifest(skill_dir: Path) -> dict[str, Any]:
             "draft_review": "scripts/review_draft.py",
             "adaptation_builder": "scripts/build_adaptation.py",
             "adaptation_review": "scripts/review_adaptation.py",
+            "markdown_export": "scripts/export_markdown.py",
+            "project_handoff": "scripts/handoff_project.py",
+            "trial_metrics": "scripts/trial_metrics.py",
             "project_validator": "scripts/validate_project.py",
             "ledger_validator": "scripts/validate_ledger.py",
             "workflow": "scripts/workflow.py",

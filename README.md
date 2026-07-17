@@ -1,66 +1,53 @@
-# 多准则可持续披露报告 AI 能力包
+# Sustainability Report Harness
 
-这是一个面向可持续发展、ESG 和气候披露咨询团队的本地 AI 能力包。它用于复用客户证据、统一映射多套披露准则，并从同一份披露母版派生不同准则的报告粗稿。
+一个给可持续发展、ESG 和气候披露顾问使用的本地 AI Skill。它读取客户资料和已审核的准则包，先形成覆盖所选准则并集的报告母版，再为每套准则生成独立 Markdown 初版。
 
-> 当前状态：M5.1 准则适配工程闭环已完成。项目可以从母版派生已锁定准则的内部/干净 Word 和差异 Excel；第二 Agent 接续、试用指标与 P1 能力仍待后续开发，真实专业验收仍待正式准则和脱敏样例。
+> 当前是内部试用版。它帮助顾问整理证据和起草报告，不提供合规认证，也不能替代顾问、法律、审计或鉴证判断。
 
-## 产品会帮助你完成什么
+## 你会得到什么
 
-完整 MVP 计划支持以下流程：
+一次完整运行默认生成：
 
-1. 创建本地报告项目并确认数据处理边界；
-2. 确认客户、报告期间、报告规格和适用准则版本；
-3. 解析 Word、文本型 PDF 和 Excel 客户材料；
-4. 建立可定位、可复用的客户证据库；
-5. 将多套准则合并为统一披露要求；
-6. 生成中文母版粗稿、回应矩阵、缺口清单和证据清单；
-7. 从母版派生特定准则的适配粗稿；
-8. 在导出干净版前拦截未确认的推断、建议文本和信息缺口。
+```text
+outputs/markdown/
+├── master_report.md                 # 所选准则要求并集的母版
+├── adapted_<standard-id>.md         # 每个已确认准则各一份
+└── report_manifest.json             # 输入和输出哈希，用于发现过期结果
+```
 
-本产品是咨询团队的内部专业辅助工具，不提供正式合规认证，也不替代顾问、法律、审计或鉴证判断。
+对应的完整相对路径是 `outputs/markdown/master_report.md`、
+`outputs/markdown/adapted_<standard-id>.md` 和
+`outputs/markdown/report_manifest.json`。
 
-## 当前可以做什么
+Markdown 会保留：
 
-当前 M5.1 Harness 可以：
+- `[待确认-推断]`：根据现有资料推断，尚未确认；
+- `[建议文本]`：建议写法，不是客户事实；
+- `[信息缺口]`：当前资料不足；
+- HTML 注释中的内容 ID 和证据 ID，方便内部追溯。
 
-- 创建符合 PRD 公共目录契约的本地项目；
-- 校验 `project.yaml`、工作流和 `disclosure_ledger.jsonl`；
-- 持久化和恢复流程状态及八个 Checkpoint；
-- 阻止跳过前置确认节点；
-- 在干净版导出前列出未确认内容和工作流阻塞项；
-- 使用模拟规则和示例项目运行自动化验证；
-- 解析本地 `.docx`、文本型 `.pdf` 和 `.xlsx` 客户或同行材料；
-- 将 Word 段落/表格、PDF 页/文本块、Excel 工作表/单元格范围写入证据库；
-- 记录 SHA-256、解析状态和证据 ID，第二次运行时复用未变化文件；
-- 对扫描版 PDF 明确提示需要 OCR，并阻止错误推进。
-- 按报告期间推荐准则版本，并由用户确认后锁定；
-- 校验准则包的原始条款、拆解要求、审核信息和内容哈希；
-- 将相同、相近和特有要求组成完整并集，阻止任何原始要求静默丢失；
-- 记录 `direct`、`supporting`、`contradicting` 三类证据关系和明确缺口；
-- 在映射、冲突证据和缺口未经用户确认时阻止进入报告目录阶段。
-- 为扫描版 PDF 持久化用户选择的 OCR、补件或人工录入方案，不静默调用外部服务；
-- 生成覆盖全部统一披露要求的正式目录，并明确选定 Anchor；
-- 先生成和审核 Anchor，再生成完整母版，保留人工编辑；
-- 分开记录准则回应评价和同行/最佳实践评价；
-- 导出内部审阅 DOCX、回应矩阵、缺口清单、证据清单和独立同行评价表；
-- 通过账本哈希、文件哈希、Checkpoint 和内容状态阻止过期或不安全的干净版导出。
-- 对每个已配置目标准则逐项执行 `keep`、`condense`、`reorganize`、`supplement` 或 `omit`；
-- 强制适配动作引用母版内容，阻止静默遗漏目标准则要求和无来源事实副本；
-- 逐项记录顾问审核，输出适配内部/干净 DOCX 和适配差异 XLSX。
+现有 DOCX/XLSX 内部审阅功能仍然保留，但不是当前 MVP 的主交付。Word 模板化输出属于后续增强。
 
-产品和开发依据包括：
+## 最简单的使用方式
 
-- [REQUIREMENTS.md](./REQUIREMENTS.md)：业务目标、范围和稳定验收基线；
-- [PRD.md](./PRD.md)：功能规则、公共数据契约、状态机和验收用例；
-- [HARNESS_ARCHITECTURE.md](./HARNESS_ARCHITECTURE.md)：Skill Harness 结构与质量协议；
-- [PROJECT_PLAN.md](./PROJECT_PLAN.md)：当前状态、里程碑、依赖和交接说明；
-- [AGENTS.md](./AGENTS.md)：开发约束和仓库规范。
+把本仓库交给能够读取 Skill 并执行本地脚本的 AI Agent，然后直接说：
 
-## 使用方式
+```text
+请使用 sustainability-report-harness 创建一个报告项目。
+先向我确认所需资料和报告要求，不要直接开始生成。
+```
 
-当前版本是一个可安装、可复制、可测试的本地 Agent Skill Harness。它已覆盖 M1–M4 工程链路及 M5.1 准则适配闭环。
+Agent 应先询问：
 
-### 1. 安装 Harness
+1. 客户材料有哪些；
+2. 是否有既有报告或客户模板；
+3. 需要使用哪些交易所规则或报告框架；
+4. 是否有优秀报告案例，以及它们用于风格参考、质量标杆还是两者；
+5. 报告用途、目标读者、文风和必须覆盖的议题。
+
+优秀案例不是必填项，但必须由用户明确回答“提供”或“不提供”。客户材料和至少一套目标准则是生成报告的必要输入。
+
+## 安装
 
 需要 Python 3.11+ 和 `uv`。在仓库根目录运行：
 
@@ -68,35 +55,42 @@
 make install
 ```
 
-项目使用 `uv.lock` 安装固定版本依赖。统一开发命令为：
+常用开发检查：
 
 ```text
-make install     安装锁定的开发依赖
-make test        运行完整自动化测试
-make lint        运行静态检查但不改写文件
-make format      应用格式化规则并刷新 Skill 校验值
-make validate    校验 Skill、模式和示例项目
+make test       # 自动化测试
+make lint       # 静态检查
+make format     # 格式化并刷新 Skill 哈希
+make validate   # 校验 Skill、Schema 和示例项目
 ```
 
-### 2. 在 Agent 中启用 Skill
+Skill 包位于 `skills/sustainability-report-harness/`。复制时必须保留整个目录，不能只复制 `SKILL.md`，因为脚本、模板、Schema 和参考协议都使用相对路径。
 
-Skill 的核心包位于：
+### Codex
+
+可以直接在本仓库使用 Skill，或把整个 Skill 目录复制到个人 Skills 目录。然后在对话中明确要求使用 `sustainability-report-harness`。
+
+### Claude Code
+
+把整个 Skill 目录复制或链接为：
 
 ```text
-skills/sustainability-report-harness/
+.claude/skills/sustainability-report-harness/
 ```
 
-该目录包含 `SKILL.md`、版本清单、分阶段参考协议、确定性脚本、项目模板和明确标记的模拟准则夹具。使用时可让 Agent 直接读取当前仓库中的 Skill，或将整个目录复制到受支持 Agent 的个人 Skill 目录。
+在 Claude Code 中要求它先读取该 Skill，再读取客户项目中的 `project.yaml`、`state/workflow.json` 和 `state/handoff.json`。
 
-在 Codex 中可直接提出类似请求：
+### WorkBuddy 和 Trae
 
-```text
-使用 $sustainability-report-harness 创建一个本地可持续披露报告项目。
-```
+当前采用通用接入方式：让 Agent 的项目指令读取完整 `SKILL.md`，并允许它执行同目录下的 Python 脚本。若产品支持项目级 Skills 目录，可将完整 Skill 包放入该目录；目录名称不同，应以对应产品的当前说明为准。
 
-### 3. 创建本地客户项目
+MVP 只验证通用 Skill、项目状态、确定性命令和独立进程接续，不要求在 Claude Code、WorkBuddy 或 Trae 上做真实外部调用，也不宣称这些产品已经实测。
 
-通过 Agent 使用时，它应先询问下列信息。也可以直接运行脚手架命令：
+## 手动创建一个项目
+
+大多数用户不需要手动运行命令；下面的方式适合排查问题或开发验证。
+
+### 1. 创建项目目录
 
 ```text
 uv run python skills/sustainability-report-harness/scripts/scaffold_project.py \
@@ -108,64 +102,48 @@ uv run python skills/sustainability-report-harness/scripts/scaffold_project.py \
   --period-end 2025-12-31
 ```
 
-需要确认的信息包括：
+真实客户项目应放在本仓库之外，且不得提交到 GitHub。
 
-- 客户和报告期间；
-- 报告类型、篇幅和颗粒度；
-- 数据是否允许发送到云端模型；
-- 是否允许联网搜索；
-- 是否需要脱敏；
-- 中间文件的保留方式；
-- 由顾问指定的适用准则及其版本。
-
-确认后，Harness 将创建以下结构：
+### 2. 放入材料
 
 ```text
-client-project/
-├── project.yaml
-├── brief.md
-├── sources/
-│   ├── client/
-│   ├── peer/
-│   └── requirements/
-├── state/
-│   ├── workflow.json
-│   ├── standards.lock.json       # 锁定准则后生成
-│   ├── source_manifest.jsonl
-│   ├── ocr_decisions.jsonl
-│   ├── evidence.jsonl
-│   ├── requirement_union.json    # 构建并集后生成
-│   ├── disclosure_ledger.jsonl
-│   ├── outline.json
-│   └── outline.md
-├── drafts/
-│   ├── master/                   # Anchor 和完整母版的 JSON/Markdown 快照
-│   └── adaptations/
-├── outputs/
-│   ├── internal/                 # DOCX、XLSX 与 export_manifest.json
-│   └── clean/                    # 仅通过门禁后生成
-└── logs/
+client-project/sources/client/        客户事实材料、既有报告
+client-project/sources/requirements/  客户任务书或模板
+client-project/sources/peer/          可选优秀案例
 ```
 
-生成的客户项目应存放在源码目录之外。不要把真实客户材料提交到仓库。
+当前支持 `.docx`、文本型 `.pdf` 和 `.xlsx`。扫描 PDF 会暂停并让用户选择本地 OCR、经授权的其他方式、补充可搜索文件或人工录入；Harness 不会静默上传资料或假装解析成功。
 
-### 4. 继续已有项目
+### 3. 确认问询结果
 
-项目状态保存在项目目录而不是 Agent 对话中。重新打开项目时，Agent 应读取 `project.yaml`、`state/workflow.json` 和相关账本，从最近完成的步骤继续，不重复处理未变化的文件，也不覆盖人工修改。
-
-可以直接查看状态或验证项目：
+先记录本项目的数据处理授权并进入规格确认阶段：
 
 ```text
 uv run python skills/sustainability-report-harness/scripts/workflow.py \
-  /absolute/path/to/client-project status
+  /absolute/path/to/client-project transition awaiting_data_consent
 
-uv run python skills/sustainability-report-harness/scripts/validate_project.py \
-  /absolute/path/to/client-project
+uv run python skills/sustainability-report-harness/scripts/workflow.py \
+  /absolute/path/to/client-project checkpoint data_consent approved \
+  --approved-by "顾问姓名"
+
+uv run python skills/sustainability-report-harness/scripts/workflow.py \
+  /absolute/path/to/client-project transition awaiting_spec_confirmation
 ```
 
-### 5. 锁定准则版本
+然后从 `skills/sustainability-report-harness/templates/intake.json.template` 复制一份回答文件，填写项目内的相对路径，并由用户确认：
 
-Agent 先基于报告期推荐版本，展示来源、生效日期、审核状态和内容哈希。顾问确认后再锁定：
+```text
+uv run python skills/sustainability-report-harness/scripts/confirm_intake.py confirm \
+  /absolute/path/to/client-project \
+  /absolute/path/to/intake.json \
+  --confirmed-by "顾问姓名"
+```
+
+结果保存到 `state/intake.json`。目标准则、参考案例选择和报告偏好不会只留在聊天记录中。
+
+### 4. 导入并锁定准则
+
+准则内容必须来自顾问导入且已经审核的结构化准则包。Agent 可以推荐报告期适用版本，但不能自行决定企业适用哪套准则，也不能静默升级版本。
 
 ```text
 uv run python skills/sustainability-report-harness/scripts/standards.py lock \
@@ -174,185 +152,50 @@ uv run python skills/sustainability-report-harness/scripts/standards.py lock \
   --confirmed-by "顾问姓名"
 ```
 
-仓库中的 `simulated-standard-a.json` 和 `simulated-standard-b.json` 仅用于结构测试。只有开发测试时才能显式使用 `--allow-simulated`，不得把它们当成正式准则。
+仓库中的 `simulated-standard-a.json` 和 `simulated-standard-b.json` 只用于自动化测试，不是正式准则。
 
-### 6. 构建证据库
+### 5. 继续证据、映射和起草流程
 
-完成数据授权、项目规格和准则版本确认后，将资料放入：
+Agent 会按以下顺序推进，并在关键节点等待顾问确认：
 
 ```text
-sources/client/    客户事实材料
-sources/peer/      同行参考材料
+资料解析 → 准则要求并集 → Evidence 确认 → 正式目录 → Anchor 章节
+→ 完整母版 → 逐准则适配 → Markdown 交付
 ```
 
-然后运行：
+项目状态保存在本地文件，不依赖某一次聊天。换一个 Agent 或重新打开项目时，应从现有状态继续，不重复解析没有变化的文件，不覆盖人工修改。
+
+### 6. 生成 Markdown
+
+完成母版确认并建立全部准则适配方案后运行：
 
 ```text
-uv run python skills/sustainability-report-harness/scripts/ingest_sources.py \
+uv run python skills/sustainability-report-harness/scripts/export_markdown.py generate \
   /absolute/path/to/client-project
 ```
 
-结果保存在 `state/source_manifest.jsonl` 和 `state/evidence.jsonl`。重复运行时，路径、哈希和解析器版本均未变化的文件不会重新解析。当前支持 `.docx`、文本型 `.pdf` 和 `.xlsx`；Excel 公式会保留但不会假装重新计算。扫描版 PDF 会标记为需要 OCR，旧版 `.doc`、`.xls` 和加密 PDF 暂不支持。
-
-扫描版 PDF 由用户选择本地 OCR、Agent 视觉、经授权的云 OCR、提供可搜索版本、人工录入、暂停，或在明确非关键时作为缺口跳过：
+检查结果是否仍然有效：
 
 ```text
-uv run python skills/sustainability-report-harness/scripts/review_ocr.py decide \
-  /absolute/path/to/client-project sources/client/scanned.pdf run_local_ocr \
-  --criticality critical --decided-by "顾问姓名"
+uv run python skills/sustainability-report-harness/scripts/export_markdown.py validate \
+  /absolute/path/to/client-project
 ```
 
-### 7. 构建多准则要求并集
+如果客户材料、优秀案例、模板、账本、目录、准则锁、intake 或输出文件发生变化，哈希校验会提示重新生成。
 
-Agent 根据已锁定规则和证据生成待审阅 mapping plan。所有 Agent 新映射必须为 `unreviewed`，然后运行：
+## 数据与安全边界
 
-```text
-uv run python skills/sustainability-report-harness/scripts/build_requirement_union.py \
-  /absolute/path/to/client-project \
-  /absolute/path/to/mapping-plan.json
-```
+- 默认本地处理，云端模型、联网、脱敏和文件保留方式按项目确认；
+- 客户事实必须引用客户证据；优秀案例只能用于结构、表达或质量对标；
+- OCR 无可用工具时必须让用户选择，不自动调用云服务；
+- 正式准则必须由专业人员审核后导入；
+- `state/disclosure_ledger.jsonl` 是业务判断的唯一真相源，Markdown、Word 和 Excel 都只能从它派生。
 
-系统会写入 `state/disclosure_ledger.jsonl` 和 `state/requirement_union.json`，并停在 Evidence Checkpoint。
+## 当前尚未完成
 
-### 8. 记录人工审核并确认 Evidence Checkpoint
+- 正式交易所准则内容不会随仓库分发；
+- 仍需要正式准则、脱敏客户材料和顾问期望稿完成专业试用；
+- 英文版、复杂篇幅控制、基础数据一致性和客户 Word 模板属于后续增强；
+- Claude Code、WorkBuddy 和 Trae 提供通用接入说明，但不属于本 MVP 的真实环境验收范围。
 
-通过 `review_requirement_union.py` 分别记录映射、证据关系和缺口决定。所有事项完成后，由顾问明确执行：
-
-```text
-uv run python skills/sustainability-report-harness/scripts/review_requirement_union.py \
-  /absolute/path/to/client-project finalize \
-  --reviewed-by "顾问姓名"
-```
-
-存在未审核或被拒绝的映射、证据关系、冲突证据或缺口时，系统拒绝进入正式目录生成。
-如果顾问要求重新分组或重做映射，可修正 mapping plan 后使用 `--replace`；未变化的人工决定会保留，变化项重新进入待审核状态。
-
-### 9. 生成目录、Anchor 和母版
-
-Agent 先按照 `templates/outline-plan.json.template` 生成 proposal，再运行：
-
-```text
-uv run python skills/sustainability-report-harness/scripts/build_outline.py \
-  /absolute/path/to/client-project /absolute/path/to/outline-plan.json
-
-uv run python skills/sustainability-report-harness/scripts/review_outline.py \
-  /absolute/path/to/client-project approved --reviewed-by "顾问姓名"
-```
-
-正文 proposal 使用 `templates/draft-proposal.json.template`。`anchor` 只能覆盖已选 Anchor，获批后 `master` 才能覆盖其余章节：
-
-```text
-uv run python skills/sustainability-report-harness/scripts/build_draft.py \
-  /absolute/path/to/client-project /absolute/path/to/anchor-proposal.json anchor
-
-uv run python skills/sustainability-report-harness/scripts/review_draft.py finalize \
-  /absolute/path/to/client-project anchor --reviewed-by "顾问姓名"
-```
-
-每个内容块、准则评价和同行评价都要先通过 `review_draft.py item` 接受、拒绝或编辑，才能 finalize。
-
-### 10. 生成并审核准则适配稿
-
-先在 `project.yaml` 的 `deliverables.adaptations` 中列出项目已锁定的目标准则。Agent 按
-`templates/adaptation-proposal.json.template` 为每个母版内容块生成一个待审阅动作，然后运行：
-
-```text
-uv run python skills/sustainability-report-harness/scripts/build_adaptation.py \
-  /absolute/path/to/client-project /absolute/path/to/adaptation-proposal.json
-```
-
-可以先导出内部包查看适配 Word 和差异 Excel。每个动作必须通过 `review_adaptation.py item`
-接受、拒绝或编辑，全部完成后执行：
-
-```text
-uv run python skills/sustainability-report-harness/scripts/review_adaptation.py finalize \
-  /absolute/path/to/client-project <standard-id> --reviewed-by "顾问姓名"
-```
-
-### 11. 导出内部审阅包
-
-```text
-uv run python skills/sustainability-report-harness/scripts/export_project.py \
-  /absolute/path/to/client-project internal
-```
-
-内部输出包括母版、四份基础 XLSX、每个已配置准则的 `adapted_<standard_id>_internal.docx`、`adaptation_diff_<standard_id>.xlsx` 和带哈希的 `export_manifest.json`。账本变更后旧输出会被判定为过期。
-
-内部包完成后，由顾问执行受控的 Export 审核。该命令会检查账本、目录、配置、准则锁、文件哈希和全部内容状态：
-
-```text
-uv run python skills/sustainability-report-harness/scripts/review_export.py \
-  /absolute/path/to/client-project --reviewed-by "顾问姓名"
-```
-
-审核通过后才能生成干净版：
-
-```text
-uv run python skills/sustainability-report-harness/scripts/export_project.py \
-  /absolute/path/to/client-project clean
-```
-
-### 12. 通过人工确认节点
-
-工作流包含不可绕过的确认节点：
-
-- 数据处理授权；
-- 项目规格和准则版本；
-- 证据缺口、映射及冲突；
-- 正式目录；
-- 代表性 Anchor 章节；
-- 完整母版；
-- 干净版导出前检查。
-
-每个阶段遵循“生成 → 校验 → 修复 → 再校验 → 汇报”。前置确认未通过时，Harness 不得进入下一阶段。
-
-## 数据安全与内容真实性
-
-- 客户材料默认保存在本地；
-- 未经项目级确认，不向外部服务发送客户内部材料；
-- 联网搜索不得携带客户内部材料；
-- 同行报告只能用于风格或质量参考，不能作为客户事实证据；
-- 正式准则必须记录来源、版本、生效日期和审核状态；
-- 模拟规则不得标记或展示为正式监管规则；
-- 推断、建议文本和信息缺口必须明确标记；
-- 人工编辑、已确认准则版本和数据授权不得被静默覆盖。
-
-## M5.1 的交付边界
-
-M5.1 在 M1–M4 基础上已交付：
-
-- 自包含的 `sustainability-report-harness` Skill 包；
-- 标准客户项目脚手架；
-- `project.yaml` 和 `disclosure_ledger.jsonl` 模式；
-- 可恢复的工作流与 Checkpoint 状态；
-- 项目、账本和导出前校验器；
-- 模拟规则、示例项目、自动化测试和开发说明；
-- DOCX、文本型 PDF 和 XLSX 本地解析；
-- 文件哈希、增量复用、证据定位和显式年份/单位提取；
-- 扫描版 PDF、空文件、空资料集和解析错误的阻塞状态。
-- 准则包、原始条款和可检查要求的完整性校验；
-- 报告期版本推荐、用户确认锁定和防静默升级；
-- 五类跨准则映射、统一披露并集和逐要求完整性检查；
-- 证据多对多关系、矛盾证据、覆盖缺口和分准则覆盖摘要；
-- 映射、证据关系和缺口的 Human-in-the-loop 审核与跨 Agent 恢复。
-- 扫描 PDF 兜底选项发现、用户决策和源文件哈希绑定；
-- 正式目录完整覆盖、冲突显示、Anchor 选定和 Outline Checkpoint；
-- Anchor-first 与完整母版起草、逐项人工审核和人工编辑保护；
-- 准则回应与同行最佳实践双轨评价；
-- 内部 DOCX、四份 XLSX、导出清单及干净版阻断逻辑。
-- 账本关联的准则适配动作、逐项人工审核和多目标准则顺序处理；
-- 准则适配内部/干净 DOCX、差异 XLSX 和统一导出清单门禁。
-
-M5.1 尚未交付：
-
-- 正式监管准则知识库；
-- 内置 OCR 引擎、旧版 `.doc`/`.xls` 和复杂嵌入对象解析；
-- 正式监管准则内容和未经专家审核即可使用的语义映射；
-- 未经顾问审核即可使用的正式报告成品；
-- 第二个 Agent 适配层；
-- 试用指标记录、英文版和完整 P1 数据一致性能力；
-- Web 界面、数据库服务或 SaaS。
-
-## 项目进度
-
-M5.1 工程测试和 Skill 验证结果以 [PROJECT_PLAN.md](./PROJECT_PLAN.md) 为准。M4 的正式完成门槛仍包括一次顾问专业审阅；真实领域试用需要经过专业人员审核的准则拆解与映射、脱敏客户材料和人工认可的期望输出，不得用模型猜测代替。
+开发状态和验收边界见 [PROJECT_PLAN.md](./PROJECT_PLAN.md)，产品契约见 [PRD.md](./PRD.md) 和 [REQUIREMENTS.md](./REQUIREMENTS.md)。

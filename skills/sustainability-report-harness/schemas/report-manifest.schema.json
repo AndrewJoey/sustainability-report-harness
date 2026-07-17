@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/sustainability-report-harness/report-manifest.schema.json",
+  "title": "Markdown report delivery manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "project_id",
+    "intake_confirmed_by",
+    "inputs",
+    "files"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "intake_confirmed_by": {"type": "string", "minLength": 1},
+    "inputs": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"$ref": "#/$defs/hash"}
+    },
+    "files": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "target_standard_id", "sha256"],
+        "properties": {
+          "path": {"type": "string", "pattern": "^outputs/markdown/.+\\.md$"},
+          "target_standard_id": {"type": ["string", "null"]},
+          "sha256": {"$ref": "#/$defs/hash"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
