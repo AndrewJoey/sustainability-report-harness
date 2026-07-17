@@ -1,0 +1,43 @@
+{
+  "client_materials": {
+    "files": [
+      "sources/client/01_公司概况与治理.docx",
+      "sources/client/02_可持续发展政策与目标.docx",
+      "sources/client/03_气候风险与韧性评估.pdf",
+      "sources/client/04_利益相关方与重要性评估.pdf",
+      "sources/client/05_环境绩效数据.xlsx",
+      "sources/client/06_员工与安全数据.xlsx",
+      "sources/client/07_供应链与商业道德.docx",
+      "sources/client/08_2024可持续发展回顾.docx"
+    ]
+  },
+  "existing_report_or_template": {
+    "status": "provided",
+    "files": [
+      "sources/client/08_2024可持续发展回顾.docx",
+      "sources/requirements/01_报告任务书与内容模板.docx"
+    ]
+  },
+  "reference_cases": {
+    "status": "provided",
+    "files": ["sources/peer/01_同行优秀案例_环屿材料2024.pdf"],
+    "usage": "both"
+  },
+  "requested_standard_ids": [
+    "simulated-standard-a",
+    "simulated-standard-b"
+  ],
+  "reporting_preferences": {
+    "purpose": "内部端到端功能测试与顾问专业审阅演练",
+    "audience": "企业管理层、客户、员工及可持续发展顾问",
+    "tone": "专业、清晰、审慎；事实、目标、推断与信息缺口必须分开",
+    "required_topics": [
+      "报告边界与治理",
+      "气候与能源",
+      "循环产品与资源效率",
+      "职业健康安全与人才",
+      "负责任供应链与商业道德"
+    ]
+  }
+}
+

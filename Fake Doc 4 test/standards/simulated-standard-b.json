@@ -1,0 +1,48 @@
+{
+  "fixture_notice": "SIMULATED STRUCTURAL FIXTURE — NOT AN OFFICIAL STANDARD",
+  "package_status": "simulated",
+  "standard_version": {
+    "standard_id": "simulated-standard-b",
+    "name": "模拟披露准则 B",
+    "version_id": "fixture-1",
+    "effective_from": "2025-01-01",
+    "effective_to": null,
+    "source_uri": "urn:report-agent:simulated-standard-b",
+    "review_status": "draft",
+    "content_hash": "61f3671625c70b38279db4f679cc4cac7e45dabc427adb18d5dffb6939912963"
+  },
+  "clauses": [
+    {
+      "clause_id": "SIM-B-1",
+      "original_text": "模拟条款：披露虚构排放数据和计量单位。"
+    },
+    {
+      "clause_id": "SIM-B-2",
+      "original_text": "模拟条款：说明虚构治理职责。"
+    }
+  ],
+  "requirements": [
+    {
+      "requirement_id": "SIM-B-REQ-001",
+      "standard_id": "simulated-standard-b",
+      "version_id": "fixture-1",
+      "clause_id": "SIM-B-1",
+      "original_text": "模拟条款：披露虚构排放数据和计量单位。",
+      "check_text": "披露模拟排放数据及计量单位。",
+      "requirement_level": "custom",
+      "conditions": [],
+      "review_status": "draft"
+    },
+    {
+      "requirement_id": "SIM-B-REQ-002",
+      "standard_id": "simulated-standard-b",
+      "version_id": "fixture-1",
+      "clause_id": "SIM-B-2",
+      "original_text": "模拟条款：说明虚构治理职责。",
+      "check_text": "说明模拟治理职责。",
+      "requirement_level": "custom",
+      "conditions": [],
+      "review_status": "draft"
+    }
+  ]
+}

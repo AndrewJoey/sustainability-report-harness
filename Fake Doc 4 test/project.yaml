@@ -1,0 +1,30 @@
+project_id: fake-doc-4-clearbay-2025
+project_name: 澄湾科技2025年可持续发展报告测试项目
+client_name: 澄湾循环科技（苏州）有限公司
+reporting_period_start: 2025-01-01
+reporting_period_end: 2025-12-31
+report_type: sustainability
+primary_language: zh-CN
+target_length_words: 12000
+granularity: standard
+selected_standards: []
+custom_requirements:
+  - 报告开篇说明全部数据为虚构测试数据
+  - 定量指标同时披露统计期间、单位和边界
+  - 对未鉴证和不完整范围三数据作显著说明
+gap_handling: marked_draft
+peer_reference_mode: both
+data_policy:
+  cloud_processing_allowed: false
+  web_search_allowed: false
+  anonymization_required: false
+  retention: keep
+deliverables:
+  master_report: true
+  response_matrix: true
+  gap_list: true
+  evidence_list: true
+  adaptations:
+    - simulated-standard-a
+    - simulated-standard-b
+
